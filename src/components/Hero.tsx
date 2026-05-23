@@ -1,5 +1,6 @@
 import React from 'react'
 import { createTodo, deleteTodo, getTodos, toggleTodo } from "@/app/actions";
+import Link from 'next/link'; // <--- Next.js Link Component Import Kiya
 
 const Hero = async () => {
   const todos = await getTodos();
@@ -85,13 +86,15 @@ const Hero = async () => {
                     </button>
                   </form>
 
-                  <span
-                    className={`text-sm font-medium transition-all ${
+                  {/* CLICKABLE LINK: Title par click karne se dynamic page khule ga */}
+                  <Link 
+                    href={`/todo/${todo.id}`} 
+                    className={`text-sm font-medium transition-all hover:underline hover:text-primary ${
                       todo.completed ? "line-through text-muted-foreground/70" : "text-foreground"
                     }`}
                   >
                     {todo.title}
-                  </span>
+                  </Link>
                 </div>
 
                 {/* 4. DELETE: Remove Button */}

@@ -98,3 +98,21 @@ export async function deleteTodo(id: string) {
     console.error("Error deleting todo:", error);
   }
 }
+// 5. READ SINGLE RECORD: Ek specific todo ki detail lane ke liye (With Security Check)
+export async function getTodoById(id: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) return null;
+
+    // findFirst use karenge taake id aur userId dono strictly check hon
+    return await db.todo.findFirst({
+      where: {
+        id: id,
+        userId: userId // Ensure ke koi doosra user kisi aur ki ID guess karke access na kare
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching single todo:", error);
+    return null;
+  }
+}
