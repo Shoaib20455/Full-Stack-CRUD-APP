@@ -9,8 +9,31 @@ A secure, full-stack production-ready CRUD application built with Next.js (App R
 - **Framework:** Next.js (App Router)
 - **Database:** Neon PostgreSQL (Serverless)
 - **ORM:** Prisma
-- **Auth:** Clerk Authentication
+- **CMS:** Payload CMS (Headless, Self-Hosted)
+- **Auth:** Clerk Authentication + Payload Built-in User Management
+- **Rich Text Editor:** Lexical Editor (via Payload)
 - **Styling:** Tailwind CSS + Shadcn UI token-based theme synchronization
+
+---
+
+## 📦 Payload CMS Integration
+
+This project integrates **Payload CMS**, a modern, self-hosted headless CMS built on Node.js and React. It provides a powerful admin dashboard for managing content and data collections without needing external services.
+
+### Key Payload CMS Features:
+- **Collections Management:** Fully typed collections for Users, Media, and Todos
+- **Admin Dashboard:** Auto-generated admin interface accessible at `/admin`
+- **Built-in Authentication:** User collection with authentication enabled
+- **File Management:** Media collection with upload capabilities
+- **REST & GraphQL APIs:** Automatic API endpoints for all collections
+- **TypeScript Support:** Auto-generated types in `payload-types.ts`
+- **Rich Text Editing:** Lexical editor for content creation
+- **Database Native:** Integrated with PostgreSQL for data persistence
+
+### Collections Overview:
+1. **Users** - Payload admin user management with email-based authentication
+2. **Media** - File and image uploads with required alt text
+3. **Todos** - Task collection with title, userId, completion status, and timestamps
 
 ---
 
@@ -43,7 +66,7 @@ npm install
 
 ### 3. Setup Environment Variables
 
-Create a `.env` file in the root directory of your project and populate it with your environment keys from Neon DB and Clerk dashboards:
+Create a `.env` file in the root directory of your project and populate it with your environment keys from Neon DB, Clerk dashboards, and Payload CMS configuration:
 
 ```env
 # Database connection string from Neon Console
@@ -52,13 +75,22 @@ DATABASE_URL="postgresql://user:password@ep-xyz-123.us-east-2.aws.neon.tech/neon
 # Clerk Authentication Keys (From Clerk Dashboard)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
+
+# Payload CMS Configuration
+PAYLOAD_SECRET=your-secure-random-secret-key-here
+PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000  # Change to your production URL in deployment
 ```
+
+> **Note:** `PAYLOAD_SECRET` should be a strong, random string. Generate one using: `openssl rand -hex 32`
 
 ### 4. Sync the Database Schema
 
-Generate the Prisma client and push your data models directly to your Neon cloud database:
+Generate the Prisma client and Payload types, then push your data models directly to your Neon cloud database:
 
 ```bash
+# Generate fresh TypeScript types for your Payload CMS
+npx payload generate:types
+
 # Push schema structure to Neon Postgres
 npx prisma db push
 
@@ -73,6 +105,21 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+#### Accessing Payload CMS Admin Dashboard
+
+Once the development server is running, navigate to:
+
+- **Admin Dashboard:** [http://localhost:3000/admin](http://localhost:3000/admin)
+- **REST API:** Available at `/api/*` endpoints
+- **GraphQL API:** Available at `/api/graphql`
+
+The admin dashboard provides:
+- User management with role-based access
+- Media library for file uploads
+- Todo collection management with full CRUD operations
+- Rich text editing with Lexical editor
+- Real-time sync with your PostgreSQL database
 
 ---
 
@@ -114,18 +161,56 @@ This project is built with strict multi-tenant data privacy:
 │   │   ├── actions.ts              # Secure Server Actions (CRUD + getTodoById)
 │   │   ├── page.tsx                # Main entry point with dynamic login/dashboard checks
 │   │   ├── middleware.ts           # Clerk routing rules & route protectors
-│   │   └── todo/
-│   │       └── [id]/
-│   │           └── page.tsx        # Dynamic Task Detail Page
+│   │   ├── (app)/                  # User-facing application routes
+│   │   │   ├── layout.tsx          # Main app layout
+│   │   │   ├── page.tsx            # Dashboard with task management
+│   │   │   └── todo/
+│   │   │       └── [id]/
+│   │   │           └── page.tsx    # Dynamic Task Detail Page
+│   │   └── (payload)/              # Payload CMS Admin Interface (Auto-generated)
+│   │       ├── layout.tsx          # Payload RootLayout wrapper
+│   │       ├── custom.scss         # Admin panel custom styling
+│   │       └── admin/
+│   │           └── [[...segments]]/
+│   │               ├── page.tsx    # Admin dashboard page
+│   │               └── importMap.js # Payload component mapping
+│   ├── collections/
+│   │   ├── Users.ts                # Payload Users collection with auth
+│   │   ├── Media.ts                # Payload Media collection with uploads
+│   │   └── Todos.ts                # Payload Todos collection config
 │   ├── components/
-│   │   ├── Hero.tsx                # Main UI with interactive CRUD + clickable task links
-│   │   └── Navbar.tsx              # Global sticky navbar synced with Shadcn UI parameters
-│   └── lib/
-│       └── db.ts                   # Singleton Prisma Client instance
+│   │   ├── Hero.tsx                # Main UI with interactive CRUD
+│   │   └── Navbar.tsx              # Global sticky navbar
+│   ├── lib/
+│   │   └── db.ts                   # Singleton Prisma Client instance
+│   ├── payload.config.ts           # Payload CMS configuration
+│   └── payload-types.ts            # Auto-generated Payload types (DO NOT EDIT)
 ├── prisma/
 │   └── schema.prisma               # Database architecture and model specs
+├── drizzle.config.ts               # Drizzle ORM configuration
+├── next.config.ts                  # Next.js configuration
+├── components.json                 # Shadcn UI configuration
 └── .env                            # Local environment keys (Secret)
 ```
+
+### Payload CMS Key Files:
+
+- **`src/payload.config.ts`** - Main Payload configuration file that defines:
+  - Collections (Users, Media, Todos)
+  - PostgreSQL database adapter
+  - Lexical editor for rich text
+  - Admin panel user and settings
+  - TypeScript type generation settings
+
+- **`src/collections/`** - Collection definitions:
+  - Each file exports a `CollectionConfig` object
+  - Defines fields, validation, timestamps, and database behavior
+  - Payload automatically generates REST/GraphQL endpoints
+
+- **`src/payload-types.ts`** - Auto-generated TypeScript types:
+  - Regenerate with: `npx payload generate:types`
+  - Do NOT edit manually
+  - Contains types for all collections and queries
 
 ---
 
@@ -139,3 +224,99 @@ npx prisma generate
 ```
 
 > **Note:** If VS Code displays type errors after a database change, press `Ctrl + Shift + P` (or `Cmd + Shift + P` on Mac) and choose **"TypeScript: Restart TS Server"**.
+
+---
+
+## 🎯 Working with Payload CMS
+
+### Creating and Modifying Collections
+
+To create a new Payload collection:
+
+1. Create a new file in `src/collections/YourCollection.ts`
+2. Export a `CollectionConfig` object with field definitions:
+
+```typescript
+import { CollectionConfig } from 'payload'
+
+export const YourCollection: CollectionConfig = {
+  slug: 'your-collection',
+  admin: {
+    useAsTitle: 'name', // Field to display as title in admin
+  },
+  fields: [
+    {
+      name: 'name',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'description',
+      type: 'textarea',
+    },
+  ],
+}
+```
+
+3. Import the collection in `src/payload.config.ts` and add it to the `collections` array
+4. Generate types: `npx payload generate:types`
+
+### Accessing Payload Data
+
+**Via Admin Dashboard:** [http://localhost:3000/admin](http://localhost:3000/admin)
+
+**Via REST API:**
+```bash
+# Get all todos
+curl http://localhost:3000/api/todos
+
+# Get a specific todo
+curl http://localhost:3000/api/todos/[id]
+
+# Create a todo
+curl -X POST http://localhost:3000/api/todos \
+  -H "Content-Type: application/json" \
+  -d '{"title":"New Todo","userId":"user123","completed":false}'
+
+# Update a todo
+curl -X PATCH http://localhost:3000/api/todos/[id] \
+  -H "Content-Type: application/json" \
+  -d '{"completed":true}'
+
+# Delete a todo
+curl -X DELETE http://localhost:3000/api/todos/[id]
+```
+
+**Via GraphQL API:** [http://localhost:3000/api/graphql](http://localhost:3000/api/graphql)
+
+### Collections Schema
+
+#### Users
+- Built-in Payload authentication collection
+- Field: `email` (required)
+- Used for admin dashboard login
+- Authentication disabled by default for API
+
+#### Media
+- File upload collection
+- Field: `alt` (required - alt text for images)
+- Auto-generated: `url`, `filename`, `mimeType`, `width`, `height`
+- Public read access enabled
+
+#### Todos
+- Task management collection
+- **title** (text, required) - Task title
+- **userId** (text, required) - Link to task owner
+- **completed** (checkbox, default: false) - Task status
+- **createdAt** / **updatedAt** (auto-generated timestamps)
+
+---
+
+## 🔐 Payload CMS Security
+
+- **Admin Authentication:** Protected by Payload's built-in user management
+- **Environment Variables:** `PAYLOAD_SECRET` should be a strong, random value
+- **Access Control:** Collections support field-level and document-level access control
+- **Database Security:** Integrated with your Neon PostgreSQL with encrypted connections
+
+---

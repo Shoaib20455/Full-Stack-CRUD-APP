@@ -9,12 +9,14 @@ datasource db {
   provider = "postgresql"
 }
 
-// For testing, Ye aik simple sa model ha
+// Payload ke defaults ke mutabiq modified model
 model Todo {
-  id        String   @id @default(cuid())
-  userId    String
+  id        Int      @id @default(autoincrement()) // Payload default integer ID use karta hai
+  userId    String   @map("user_id")               // Payload table me 'user_id' banaye ga, Prisma me 'userId' hi rahay ga
   title     String
   completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at") // Payload ke timestamps se mapping
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("todo") // Payload table ka naam lowercase 'todo' rakhta hai
 }

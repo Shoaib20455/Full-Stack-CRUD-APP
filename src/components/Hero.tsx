@@ -1,5 +1,5 @@
 import React from 'react'
-import { createTodo, deleteTodo, getTodos, toggleTodo } from "@/app/actions";
+import { createTodo, deleteTodo, getTodos, toggleTodo } from "@/app/(app)/actions";
 import Link from 'next/link'; // <--- Next.js Link Component Import Kiya
 
 const Hero = async () => {
@@ -59,7 +59,7 @@ const Hero = async () => {
           <div className="max-h-72 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
             {todos.map((todo) => (
               <div
-                key={todo.id}
+                key={Number(todo.id)}
                 className="flex items-center justify-between bg-muted/30 border border-border/60 p-4 rounded-lg hover:bg-muted/50 transition-all duration-150"
               >
                 <div className="flex items-center gap-3 flex-1">
@@ -67,7 +67,7 @@ const Hero = async () => {
                   <form
                     action={async () => {
                       "use server";
-                      await toggleTodo(todo.id, !todo.completed);
+                      await toggleTodo(Number(todo.id), !todo.completed);
                     }}
                   >
                     <button
@@ -88,7 +88,7 @@ const Hero = async () => {
 
                   {/* CLICKABLE LINK: Title par click karne se dynamic page khule ga */}
                   <Link 
-                    href={`/todo/${todo.id}`} 
+                    href={`/todo/${Number(todo.id)}`} 
                     className={`text-sm font-medium transition-all hover:underline hover:text-primary ${
                       todo.completed ? "line-through text-muted-foreground/70" : "text-foreground"
                     }`}
@@ -101,7 +101,7 @@ const Hero = async () => {
                 <form
                   action={async () => {
                     "use server";
-                    await deleteTodo(todo.id);
+                    await deleteTodo(Number(todo.id));
                   }}
                 >
                   <button
