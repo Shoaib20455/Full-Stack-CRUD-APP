@@ -23,5 +23,12 @@ export const Todos: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
     },
+    {
+      name: 'category',
+      type: 'relationship',
+      relationTo: 'categories' as any, // Yeh bilkul Categories collection ke slug se match hona chahiye
+      hasMany: false,            // Aik todo ke sath aik hi category select ho sakegi
+      required: false,           // Optional rakhte hain, zaroori nahi har todo ki category ho
+    },
   ],
 }

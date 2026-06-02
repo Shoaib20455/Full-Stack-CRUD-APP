@@ -4,7 +4,6 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import Hero from "@/components/Hero";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,8 +22,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  stats
 }: Readonly<{
   children: React.ReactNode;
+  stats: React.ReactNode;
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
@@ -37,7 +38,22 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Navbar />
-            {children}
+            
+            {/* 🚀 FIXED: Main Responsive Grid Wrapper jo dono ko parallel chalaye ga */}
+            <main className="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+              
+              {/* Left Side: Todo list (takes 2 columns on desktop) */}
+              <div className="md:col-span-2">
+                {children}
+              </div>
+
+              {/* Right Side: Parallel Stats Widget (takes 1 column) */}
+              <div className="w-full">
+                {stats}
+              </div>
+
+            </main>
+
           </ThemeProvider>
         </ClerkProvider>
       </body>

@@ -40,13 +40,16 @@ export async function createTodo(title: string) {
 export async function getTodos() {
   try {
     const { userId } = await auth();
-    // Agar user login nahi ha, to database query karne ki zaroorat hi nahi, khali list bhej do
     if (!userId) return []; 
 
     return await db.todo.findMany({
       where: {
-        userId: userId // SQL: WHERE userId = 'current_user_id'
+        userId: userId 
       },
+      // 🚀 NEW: Prisma ko bolna ke Todo ke sath Category ka data bhi sath lekar aaye
+      include: {
+        category: true 
+      } as any,
       orderBy: { 
         createdAt: "desc" 
       },
@@ -110,6 +113,10 @@ export async function getTodoById(id: number) {
         id: id,
         userId: userId
       },
+      // 🚀 NEW: Single record me bhi category include karein
+      include: {
+        category: true
+      } as any
     });
   } catch (error) {
     console.error("Error fetching single todo:", error);

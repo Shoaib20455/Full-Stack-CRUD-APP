@@ -9,14 +9,31 @@ datasource db {
   provider = "postgresql"
 }
 
-// Payload ke defaults ke mutabiq modified model
+// 1. Todo Model (Updated with Category Relation)
 model Todo {
-  id        Int      @id @default(autoincrement()) // Payload default integer ID use karta hai
-  userId    String   @map("user_id")               // Payload table me 'user_id' banaye ga, Prisma me 'userId' hi rahay ga
+  id        Int      @id @default(autoincrement()) 
+  userId    String   @map("user_id")               
   title     String
   completed Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at") // Payload ke timestamps se mapping
+  createdAt DateTime @default(now()) @map("created_at") 
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("todo") // Payload table ka naam lowercase 'todo' rakhta hai
+  // 🚀 NEW: Prisma ko batana ke Todo ka ek CategoryId column hai aur wo Category table se jura hai
+  categoryId Int?      @map("category_id") // Payload isay database me 'category_id' banata hai
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@map("todo") 
+}
+
+// 2. 🚀 NEW: Category Model (Jo Payload ne database me banaya hai, usay Prisma me map karna)
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Ek category ke andar bohot saare todos ho sakte hain (One-to-Many)
+  todos     Todo[]
+
+  @@map("category") // Payload database me table ka naam lowercase 'category' rakhta hai
 }
