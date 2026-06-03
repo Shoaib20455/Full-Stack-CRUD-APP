@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-// Apne project ke mutabiq prisma client ka path exact check kar lein (e.g., @/lib/prisma ya jahan bhi db instance hai)
 import { db } from "@/lib/db"; 
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. URL se search query aur category parameters nikalna
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const categorySlug = searchParams.get("category");
+    
+    // 📄 PAGINATION PARAMS: URL se page number nikalna (Default page = 1)
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = 5; // Ek page par sirf 5 tasks dikhein ge (Performance Boost)
+    const skip = (page - 1) * limit; // Kitne records chorney hain
 
-    // 2. Dynamic filter object banana
     const whereClause: any = {};
 
-    // 🔍 TEXT SEARCH LOGIC: Title me text dhoondo (Case-Insensitive)
     if (search) {
       whereClause.title = {
         contains: search,
@@ -20,16 +21,21 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // 🏷️ CATEGORY FILTER LOGIC: Category table ke slug se match karo
     if (categorySlug) {
       whereClause.category = {
         slug: categorySlug,
       };
     }
 
-    // 3. Database se filtering data select karna Prisma ke through
+    // 🚀 PERFORMANCE OPTIMIZATION: 
+    // 1. Total filtered tasks count karna (Pagination metadata ke liye)
+    const totalTodos = await db.todo.count({ where: whereClause });
+
+    // 2. Database se sirf specific chunk mangwana using take & skip
     const todos = await db.todo.findMany({
       where: whereClause,
+      take: limit, // Sirf 5 records uthao
+      skip: skip,  // Shuruati records skip karo based on page number
       include: {
         category: {
           select: {
@@ -39,11 +45,24 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        createdAt: "desc", // Taake naye tasks hamesha top par dikhein
+        createdAt: "desc",
       },
     });
 
-    return NextResponse.json({ success: true, data: todos }, { status: 200 });
+    // Metadata ke sath total pages calculate karna
+    const totalPages = Math.ceil(totalTodos / limit);
+
+    return NextResponse.json({ 
+      success: true, 
+      data: todos,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalTodos,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
+    }, { status: 200 });
 
   } catch (error: any) {
     console.error("API Error:", error);
