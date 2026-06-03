@@ -1,17 +1,29 @@
 # 🚀 Next.js + Neon DB Task Manager
 
-A full-stack CRUD application built with Next.js, Prisma ORM, Neon PostgreSQL, and Clerk Authentication.
+A full-stack CRUD application built with Next.js, Prisma ORM, Neon PostgreSQL, and Clerk Authentication. Features advanced search & filtering with URL-based state persistence and relational database design.
+
+---
+
+## 🌟 Key Features
+
+✅ **Full CRUD Operations** - Create, read, update, delete tasks securely  
+✅ **Multi-Tenant Isolation** - Each user sees only their own tasks (Clerk Auth)  
+✅ **Database Relations** - Todo-to-Category one-to-many relationships  
+✅ **Search & Filter API** - `/api/todos` endpoint with text search and category filtering  
+✅ **URL Query State** - Persistent filtering via URL parameters (`?search=X&category=Y`)  
+✅ **Admin Dashboard** - Payload CMS for managing collections  
+✅ **Type Safety** - Full TypeScript + auto-generated types  
 
 ---
 
 ## 🛠️ Tech Stack
 
-- Next.js (App Router)
-- Neon PostgreSQL
-- Prisma ORM
-- Payload CMS
-- Clerk Authentication
-- Tailwind CSS + Shadcn UI
+- **Frontend**: Next.js 16 (App Router) + React 19 + Tailwind CSS + Shadcn UI
+- **Backend**: Next.js Server Actions + API Routes
+- **Database**: Neon PostgreSQL + Prisma ORM
+- **CMS**: Payload CMS (Admin dashboard)
+- **Authentication**: Clerk (User login & multi-tenant)
+- **Language**: TypeScript
 
 ---
 
@@ -68,8 +80,88 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
+## 📚 Features Overview
+
+### Database Relations
+Todos are organized with Categories through a one-to-many relationship:
+```prisma
+Todo has categoryId? → Category (one category per todo, optional)
+Category has todos[] → Todo (one category can have many todos)
+```
+
+### Search & Filter API
+**Endpoint:** `GET /api/todos`
+
+**Query Parameters:**
+- `search` - Search in todo titles (case-insensitive)
+- `category` - Filter by category slug
+
+**Examples:**
+```
+/api/todos?search=meeting
+/api/todos?category=urgent
+/api/todos?search=project&category=critical
+```
+
+### URL Query State
+Filter state is persisted in the URL using query parameters. Users can:
+- Share filtered views with others
+- Use browser back/forward to navigate filter history
+- Bookmark filtered results
+
+**Example URLs:**
+- `http://localhost:3000/?search=bugs` - Tasks with "bugs" in title
+- `http://localhost:3000/?category=urgent` - Urgent tasks only
+- `http://localhost:3000/?search=fix&category=critical` - Filtered by both
+
+---
+
 ## 📍 Access Points
 
-- **App:** [http://localhost:3000](http://localhost:3000)
-- **Admin Dashboard:** [http://localhost:3000/admin](http://localhost:3000/admin)
-- **GraphQL:** [http://localhost:3000/api/graphql](http://localhost:3000/api/graphql)
+| Endpoint | Purpose |
+|----------|---------|
+| [http://localhost:3000](http://localhost:3000) | Main app dashboard |
+| [http://localhost:3000/admin](http://localhost:3000/admin) | Payload CMS admin panel |
+| [http://localhost:3000/api/todos](http://localhost:3000/api/todos) | Search & filter API (GET) |
+| [http://localhost:3000/api/graphql](http://localhost:3000/api/graphql) | GraphQL endpoint |
+
+---
+
+## 🔄 Architecture
+
+### Server Components (async)
+- **page.tsx** - Receives URL `searchParams`, passes to Hero
+- **Hero.tsx** - Fetches and filters todos based on search params
+- **SearchInput.tsx** (client) - Manages URL query state with `useRouter`
+
+### Database Layer
+```
+Client → SearchInput (URL updates) 
+       → page.tsx (reads searchParams)
+       → Hero.tsx (filters with Prisma)
+       → Database (returns filtered todos)
+```
+
+### Data Models
+**Todo:**
+- `id`, `userId`, `title`, `completed`, `createdAt`, `updatedAt`
+- `categoryId` (optional, FK to Category)
+
+**Category:**
+- `id`, `name`, `slug`, `createdAt`, `updatedAt`
+- `todos[]` (relationship to many Todos)
+
+---
+
+## 🔒 Security
+
+✅ **Authentication**: Clerk middleware protects routes  
+✅ **Authorization**: Every query filters by current user's ID  
+✅ **Data Isolation**: Users can only access their own todos  
+✅ **Server Actions**: CRUD operations run on server with auth checks  
+
+---
+
+## 📖 Documentation
+
+For detailed project structure and feature explanations, see [PROJECT_EXP.md](PROJECT_EXP.md).

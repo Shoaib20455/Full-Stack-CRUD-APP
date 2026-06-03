@@ -13,5 +13,11 @@ export const Categories: CollectionConfig = {
       required: true,
       unique: true, // Ek naam ki do categories nahi ban sakein gi (e.g., Work, Personal)
     },
+    {
+      name: 'slug', // 👈 NEW: Dashboard par URL-friendly handle
+      type: 'text',
+      required: true,
+      unique: true,
+    },
   ],
 }

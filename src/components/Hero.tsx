@@ -1,14 +1,52 @@
 import React from 'react'
-import { createTodo, deleteTodo, getTodos, toggleTodo } from "@/app/(app)/actions";
-import Link from 'next/link'; // <--- Next.js Link Component Import Kiya
+import { createTodo, deleteTodo, toggleTodo } from "@/app/(app)/actions";
+import Link from 'next/link';
+import SearchInput from './SearchInput';
+import { db } from '@/lib/db';
 
-const Hero = async () => {
-  const todos = await getTodos();
+interface HeroProps {
+  searchParams?: Promise<{ search?: string; category?: string }>;
+}
 
+const Hero = async ({ searchParams }: HeroProps) => {
+  const resolvedParams = await searchParams;
+  const search = resolvedParams?.search || "";
+  const categorySlug = resolvedParams?.category || "";
+
+  // 1. Fetch Categories for the Dropdown (Dynamic Option)
+  const categories = await db.category.findMany({
+    orderBy: { name: "asc" }
+  });
+
+  // 2. Fetch Filtered Todos based on Search and Tabs
+  const whereClause: any = {};
+  if (search) {
+    whereClause.title = { contains: search, mode: "insensitive" };
+  }
+  if (categorySlug) {
+    whereClause.category = { slug: categorySlug };
+  }
+
+  const todos = await db.todo.findMany({
+    where: whereClause,
+    include: {
+      category: {
+        select: { name: true, slug: true }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  // 3. Server Action Handler inside Form
   async function handleCreate(formData: FormData) {
     "use server";
     const title = formData.get("title") as string;
-    await createTodo(title);
+    const catIdRaw = formData.get("categoryId") as string;
+    
+    // Convert string category ID to number for Prisma relation
+    const categoryId = catIdRaw ? Number(catIdRaw) : null;
+    
+    await createTodo(title, categoryId);
   }
 
   return (
@@ -26,18 +64,35 @@ const Hero = async () => {
 
       <div className="h-[1px] bg-border w-full" />
 
-      {/* 1. CREATE Operation: Input Form */}
-      <form action={handleCreate} className="flex gap-2">
+      {/* Advanced Filtering Search Inputs */}
+      <SearchInput />
+
+      {/* 🚀 1. CREATE Operation: Input Form + Dropdown Category Selection */}
+      <form action={handleCreate} className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
           name="title"
           placeholder="Write a new task..."
           required
-          className="flex-1 h-10 bg-background border border-input rounded-md px-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors"
+          className="flex-1 h-10 bg-background border border-input rounded-md px-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
         />
+
+        {/* 🏷️ Dynamic Category Selection Dropdown */}
+        <select
+          name="categoryId"
+          className="h-10 bg-background border border-input rounded-md px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring font-mono transition-colors cursor-pointer"
+        >
+          <option value="">No Category</option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+
         <button
           type="submit"
-          className="h-10 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 shadow transition-colors duration-200"
+          className="h-10 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 shadow transition-colors duration-200 whitespace-nowrap"
         >
           Add Task
         </button>
@@ -53,7 +108,7 @@ const Hero = async () => {
 
         {todos.length === 0 ? (
           <div className="text-center py-12 text-sm text-muted-foreground border border-dashed rounded-lg bg-muted/20">
-            No tasks yet. Add one above to test the Neon Database connection!
+            No tasks found. Try changing your search keywords or category tags!
           </div>
         ) : (
           <div className="max-h-72 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
@@ -86,15 +141,24 @@ const Hero = async () => {
                     </button>
                   </form>
 
-                  {/* CLICKABLE LINK: Title par click karne se dynamic page khule ga */}
-                  <Link 
-                    href={`/todo/${Number(todo.id)}`} 
-                    className={`text-sm font-medium transition-all hover:underline hover:text-primary ${
-                      todo.completed ? "line-through text-muted-foreground/70" : "text-foreground"
-                    }`}
-                  >
-                    {todo.title}
-                  </Link>
+                  {/* Title & Category Display */}
+                  <div className="flex flex-col items-start gap-0.5">
+                    <Link 
+                      href={`/todo/${Number(todo.id)}`} 
+                      className={`text-sm font-medium transition-all hover:underline hover:text-primary ${
+                        todo.completed ? "line-through text-muted-foreground/70" : "text-foreground"
+                      }`}
+                    >
+                      {todo.title}
+                    </Link>
+                    
+                    {/* UI Tag showing which category is selected */}
+                    {todo.category && (
+                      <span className="text-[10px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-mono rounded">
+                        {todo.category.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* 4. DELETE: Remove Button */}

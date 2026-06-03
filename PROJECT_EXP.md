@@ -2,10 +2,13 @@
 
 ## 🎯 Project Overview
 
-A full-stack CRUD application for task/todo management with multi-tenant data isolation. Users can create, read, update, and delete tasks securely. Each user can only see and manage their own tasks through Clerk Authentication.
+A full-stack CRUD application for task/todo management with multi-tenant data isolation, advanced filtering, and URL-based state persistence. Users can create, read, update, and delete tasks securely while organizing them with categories. Each user can only see and manage their own tasks through Clerk Authentication.
 
 **Key Characteristics:**
 - Built with Next.js (App Router) + Prisma ORM + Neon PostgreSQL
+- **Database Relations**: Todo-to-Category relationship with relational filtering
+- **Search & Filter API**: RESTful endpoint with text search and category-based filtering
+- **URL Query State**: Client-side state management via query parameters for persistent filtering
 - Payload CMS integration for admin dashboard
 - Server-side security with Clerk auth checks
 - Parallel routes for responsive sidebar analytics
@@ -26,7 +29,7 @@ Full Stack CRUD APP/
 │   │   │
 │   │   ├── (app)/                          # Route Group for authenticated app routes
 │   │   │   ├── layout.tsx                  # Main layout with grid (children + @stats slots)
-│   │   │   ├── page.tsx                    # Dashboard - todo list & CRUD interface
+│   │   │   ├── page.tsx                    # Dashboard - accepts search & category URL params
 │   │   │   │
 │   │   │   ├── @stats/                     # Parallel Route Slot for analytics
 │   │   │   │   ├── page.tsx                # Shows completed/pending task counts
@@ -41,6 +44,12 @@ Full Stack CRUD APP/
 │   │   │   │   └── page.tsx
 │   │   │   ├── globals.css                 # Global Tailwind styles
 │   │   │   └── test.css
+│   │   │
+│   │   ├── api/                            # API Routes (Search & Filter)
+│   │   │   ├── todos/
+│   │   │   │   └── route.ts                # 🚀 GET: Search & filter todos by title & category
+│   │   │   └── graphql/
+│   │   │       └── route.ts                # GraphQL endpoint
 │   │   │
 │   │   └── (payload)/                      # Route Group for Payload CMS
 │   │       ├── layout.tsx                  # Payload root layout
@@ -58,7 +67,8 @@ Full Stack CRUD APP/
 │   │   └── Categories.ts                   # Category collection (for organizing todos)
 │   │
 │   ├── components/                         # React Components
-│   │   ├── Hero.tsx                        # Main CRUD interface
+│   │   ├── Hero.tsx                        # Main CRUD interface + filtered todo display
+│   │   ├── SearchInput.tsx                 # 🚀 Client component for URL query state management
 │   │   ├── Navbar.tsx                      # Sticky navigation bar
 │   │   ├── BuyOurServices.tsx              # Service section
 │   │   ├── ModeToggle.tsx                  # Dark/Light theme toggle
@@ -75,7 +85,7 @@ Full Stack CRUD APP/
 │   └── proxy.ts                            # Payload proxy setup
 │
 ├── prisma/
-│   └── schema.prisma                       # Database schema (Todo, Category models with relations)
+│   └── schema.prisma                       # Database schema (Todo + Category with FK relations)
 │
 ├── public/                                 # Static assets
 │
@@ -97,6 +107,179 @@ Full Stack CRUD APP/
 ```
 
 ---
+
+## 🚀 Major Features & Upgrades
+
+### 1. **Database Relations** 📊
+The project now features a **one-to-many relationship** between Todos and Categories:
+
+**Database Schema (Prisma):**
+```prisma
+model Todo {
+  id        Int      @id @default(autoincrement()) 
+  userId    String   @map("user_id")               
+  title     String
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") 
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  categoryId Int?      @map("category_id") // Foreign key
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  @@map("todo") 
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  slug      String   @unique // Used in URL queries
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  todos     Todo[]
+  
+  @@map("category") 
+}
+```
+
+**Key Benefits:**
+- Each todo can be organized under a category
+- Enforced data integrity with foreign key constraints
+- Cascading delete/null on category removal (`onDelete: SetNull`)
+- Category slug enables clean URL-based filtering
+
+---
+
+### 2. **Search & Filter API** 🔍
+A dedicated REST API endpoint for searching and filtering todos:
+
+**Endpoint:** `GET /api/todos`
+
+**Query Parameters:**
+- `search` - Text search within todo titles (case-insensitive)
+- `category` - Filter by category slug
+
+**Example Requests:**
+```
+/api/todos?search=meeting
+/api/todos?category=urgent
+/api/todos?search=project&category=critical
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "title": "Review project proposal",
+      "completed": false,
+      "categoryId": 2,
+      "category": {
+        "name": "Urgent",
+        "slug": "urgent"
+      }
+    }
+  ]
+}
+```
+
+**Implementation Details:**
+- Server-side filtering with Prisma dynamic where clauses
+- Case-insensitive text search using `contains` + `insensitive` mode
+- Relationship-based filtering via category slug matching
+- Ordered by creation date (newest first)
+
+---
+
+### 3. **Frontend URL Query State** 🌐
+URL parameters are used to persist filter state in the browser, enabling:
+- Shareable filtered views
+- Browser history navigation
+- Bookmark-able filter combinations
+
+**How It Works:**
+
+**SearchInput Component** (`src/components/SearchInput.tsx`):
+```typescript
+"use client";
+export default function SearchInput() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const handleSearch = (text: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (text) params.set("search", text);
+    else params.delete("search");
+    router.push(`?${params.toString()}`);
+  };
+  
+  const handleCategory = (slug: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (slug === "all") params.delete("category");
+    else params.set("category", slug);
+    router.push(`?${params.toString()}`);
+  };
+}
+```
+
+**Page Component** (`src/app/(app)/page.tsx`):
+```typescript
+interface PageProps {
+  searchParams: Promise<{ search?: string; category?: string }>;
+}
+
+export default async function Home({ searchParams }: PageProps) {
+  const { userId } = await auth();
+  const resolvedParams = await searchParams;
+  const search = resolvedParams?.search || "";
+  const categorySlug = resolvedParams?.category || "";
+  
+  // Pass to Hero component for rendering filtered results
+  return <Hero searchParams={searchParams} />;
+}
+```
+
+**Example URLs:**
+- `/?search=meeting` - Show todos with "meeting" in title
+- `/?category=urgent` - Show urgent category todos
+- `/?search=bug&category=critical` - Combined filters
+
+**Benefits:**
+- ✅ State persists on page reload
+- ✅ Filters can be shared via URL
+- ✅ Browser back/forward button works correctly
+- ✅ Deep linking to filtered views
+- ✅ Clean, readable query parameter structure
+
+---
+
+## 🔄 Data Flow
+
+```
+┌─────────────────────────────────────┐
+│   SearchInput (Client Component)    │  ← Manages URL params
+└──────────────────┬──────────────────┘
+                   │
+                   ├─→ router.push(`?search=X&category=Y`)
+                   │
+┌──────────────────▼──────────────────┐
+│    page.tsx (Server Component)      │  ← Reads URL params
+│  ↓ searchParams: Promise<...>       │
+└──────────────────┬──────────────────┘
+                   │
+┌──────────────────▼──────────────────┐
+│    Hero.tsx (Server Component)      │  ← Filters & displays todos
+│  ↓ Prisma query with where clause   │
+└──────────────────┬──────────────────┘
+                   │
+┌──────────────────▼──────────────────┐
+│    Database (PostgreSQL/Neon)       │
+│  ← Returns filtered todos with       │
+│    category relationships            │
+└─────────────────────────────────────┘
+```
 
 ## 🔄 Parallel Routes (@stats Slot)
 

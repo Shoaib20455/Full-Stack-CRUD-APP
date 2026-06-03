@@ -1,7 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import Hero from "@/components/Hero";
 
-export default async function Home() {
+// 🎯 NEXT.JS 15/16 STANDARD: TypeScript interface for dynamic URL query params
+interface PageProps {
+  searchParams: Promise<{ search?: string; category?: string }>;
+}
+
+export default async function Home({ searchParams }: PageProps) {
   const { userId } = await auth();
 
   if (!userId) {
@@ -19,7 +24,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-background text-foreground flex flex-col items-center justify-center p-4 md:p-6">
-      <Hero />
+      {/* 🎯 Forwarding the search params promise to our Hero component */}
+      <Hero searchParams={searchParams} />
     </main>
   );
 }

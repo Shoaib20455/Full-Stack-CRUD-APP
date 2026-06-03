@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 
 /**
  * Helper function: Check karta ha ke user logged in ha ya nahi.
- * Agar logged in ho to uski Clerk userId return karta ha, warna error throw karta ha.
  */
 async function getRequiredSession() {
   const { userId } = await auth();
@@ -16,8 +15,8 @@ async function getRequiredSession() {
   return userId;
 }
 
-// 1. CREATE: Naya Todo sirf logged-in user ki ID ke sath store hoga
-export async function createTodo(title: string) {
+// 🎯 UPDATED: Ab yeh function 'categoryId' bhi accept karega (optional)
+export async function createTodo(title: string, categoryId?: number | null) {
   if (!title.trim()) return;
   
   try {
@@ -26,7 +25,9 @@ export async function createTodo(title: string) {
     await db.todo.create({
       data: { 
         title,
-        userId // Database ke naye userId column me Clerk ID chali jaye gi
+        userId,
+        // 🚀 NEW: Agar dropdown se id aayi hai to map karega, warna null chorega
+        categoryId: categoryId ? categoryId : null
       },
     });
     
@@ -36,7 +37,7 @@ export async function createTodo(title: string) {
   }
 }
 
-// 2. READ: Saare web platform ke todos nahi, balkey SIRF is specific user ke todos layega
+// 2. READ: SIRF is specific user ke todos layega
 export async function getTodos() {
   try {
     const { userId } = await auth();
@@ -46,7 +47,6 @@ export async function getTodos() {
       where: {
         userId: userId 
       },
-      // 🚀 NEW: Prisma ko bolna ke Todo ke sath Category ka data bhi sath lekar aaye
       include: {
         category: true 
       } as any,
@@ -60,15 +60,14 @@ export async function getTodos() {
   }
 }
 
-// 3. UPDATE: Todo ka completed status badalna (With Security Check)
-// 🔥 FIX: id ko 'number' kiya kyunki Prisma Int filter expect kar raha hai
+// 3. UPDATE: Todo ka completed status badalna
 export async function toggleTodo(id: number, completed: boolean) {
   try {
     const userId = await getRequiredSession();
     
     await db.todo.updateMany({
       where: { 
-        id: id,      // Ab Prisma ko proper Int/number milega
+        id: id,      
         userId: userId 
       },
       data: { 
@@ -82,15 +81,14 @@ export async function toggleTodo(id: number, completed: boolean) {
   }
 }
 
-// 4. DELETE: Todo ko khatam karna (With Security Check)
-// 🔥 FIX: id ko 'number' kiya
+// 4. DELETE: Todo ko khatam karna
 export async function deleteTodo(id: number) {
   try {
     const userId = await getRequiredSession();
     
     await db.todo.deleteMany({
       where: { 
-        id: id,      // Ab Prisma ko proper Int/number milega
+        id: id,      
         userId: userId 
       },
     });
@@ -101,8 +99,7 @@ export async function deleteTodo(id: number) {
   }
 }
 
-// 5. READ SINGLE RECORD: Ek specific todo ki detail lane ke liye (With Security Check)
-// 🔥 FIX: Pure number injection aur structure clean kiya
+// 5. READ SINGLE RECORD
 export async function getTodoById(id: number) {
   try {
     const { userId } = await auth();
@@ -113,7 +110,6 @@ export async function getTodoById(id: number) {
         id: id,
         userId: userId
       },
-      // 🚀 NEW: Single record me bhi category include karein
       include: {
         category: true
       } as any
