@@ -9,6 +9,7 @@ A full-stack CRUD application for task/todo management with multi-tenant data is
 - **Database Relations**: Todo-to-Category relationship with relational filtering
 - **Search & Filter API**: RESTful endpoint with text search and category-based filtering
 - **URL Query State**: Client-side state management via query parameters for persistent filtering
+- **Page Optimization**: Pagination with 5 tasks per page for improved performance
 - Payload CMS integration for admin dashboard
 - Server-side security with Clerk auth checks
 - Parallel routes for responsive sidebar analytics
@@ -30,6 +31,8 @@ Full Stack CRUD APP/
 │   │   ├── (app)/                          # Route Group for authenticated app routes
 │   │   │   ├── layout.tsx                  # Main layout with grid (children + @stats slots)
 │   │   │   ├── page.tsx                    # Dashboard - accepts search & category URL params
+│   │   │   ├── actions.ts                  # Server actions for CRUD operations
+│   │   │   ├── favicon.ico                 # App favicon
 │   │   │   │
 │   │   │   ├── @stats/                     # Parallel Route Slot for analytics
 │   │   │   │   ├── page.tsx                # Shows completed/pending task counts
@@ -41,9 +44,10 @@ Full Stack CRUD APP/
 │   │   │   │   └── page.tsx                # Detail page - displays single todo info
 │   │   │   │
 │   │   │   ├── BuyOurServices/
-│   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx                # Service showcase page
+│   │   │   │
 │   │   │   ├── globals.css                 # Global Tailwind styles
-│   │   │   └── test.css
+│   │   │   └── test.css                    # Test styles
 │   │   │
 │   │   ├── api/                            # API Routes (Search & Filter)
 │   │   │   ├── todos/
@@ -255,7 +259,46 @@ export default async function Home({ searchParams }: PageProps) {
 
 ---
 
-## 🔄 Data Flow
+### 4. **Page Optimization (Pagination)** ⚡
+Tasks are displayed with pagination to optimize performance and reduce initial load time:
+
+**Implementation:**
+```typescript
+// Hero.tsx - Page and limit from URL params
+const page = Number(resolvedParams?.page) || 1;  // Default page 1
+const limit = 5;                                   // 5 tasks per page
+const skip = (page - 1) * limit;                  // Offset calculation
+
+// Prisma query with pagination
+const todos = await db.todo.findMany({
+  where: whereClause,
+  take: limit,  // Fetch only 5 tasks
+  skip: skip,   // Skip based on page number
+  include: { category: { select: { name: true, slug: true } } },
+  orderBy: { createdAt: "desc" }
+});
+```
+
+**How It Works:**
+- **Page Parameter**: URL query param `?page=1` determines which page to display
+- **Limit**: Fixed at 5 tasks per page for consistent UX
+- **Skip Calculation**: `(page - 1) * 5` skips previous pages' tasks
+- **Efficient Loading**: Only fetches data needed for current page
+
+**Benefits:**
+- ✅ Reduces initial render time
+- ✅ Lower database load
+- ✅ Better user experience with faster page loads
+- ✅ Improved memory usage
+- ✅ Scales well with large datasets
+
+**Example URLs:**
+- `/?page=1` - First 5 tasks
+- `/?page=2` - Tasks 6-10
+- `/?search=bug&page=1` - Filtered tasks, page 1
+- `/?category=urgent&page=2` - Category filtered, page 2
+
+---
 
 ```
 ┌─────────────────────────────────────┐
