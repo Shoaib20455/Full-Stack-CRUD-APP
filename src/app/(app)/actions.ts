@@ -15,18 +15,23 @@ async function getRequiredSession() {
   return userId;
 }
 
-// 🎯 UPDATED: Ab yeh function 'categoryId' bhi accept karega (optional)
-export async function createTodo(title: string, categoryId?: number | null) {
-  if (!title.trim()) return;
+// 🎯 PRO REFIND: Accepts FormData directly from the HTML form now
+export async function createTodo(formData: FormData) {
+  // 🚀 Native Web API standard extraction
+  const title = formData.get("title") as string;
+  const catIdRaw = formData.get("categoryId") as string;
+  const categoryId = catIdRaw ? Number(catIdRaw) : null;
+
+  if (!title || !title.trim()) return;
   
   try {
     const userId = await getRequiredSession();
     
     await db.todo.create({
       data: { 
-        title,
+        title: title.trim(),
         userId,
-        // 🚀 NEW: Agar dropdown se id aayi hai to map karega, warna null chorega
+        // Agar dropdown se id aayi hai to map karega, warna null chorega
         categoryId: categoryId ? categoryId : null
       },
     });
@@ -34,29 +39,6 @@ export async function createTodo(title: string, categoryId?: number | null) {
     revalidatePath("/"); // Frontend UI ko refresh karne ke liye
   } catch (error) {
     console.error("Error creating todo:", error);
-  }
-}
-
-// 2. READ: SIRF is specific user ke todos layega
-export async function getTodos() {
-  try {
-    const { userId } = await auth();
-    if (!userId) return []; 
-
-    return await db.todo.findMany({
-      where: {
-        userId: userId 
-      },
-      include: {
-        category: true 
-      } as any,
-      orderBy: { 
-        createdAt: "desc" 
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching todos:", error);
-    return [];
   }
 }
 

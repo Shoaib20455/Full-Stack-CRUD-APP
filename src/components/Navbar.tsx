@@ -34,12 +34,6 @@ const Navbar = () => {
               </Link>
             </Button>
 
-            <Button variant="ghost" className="flex items-center gap-2" asChild>
-              <Link href="/plants">
-                <Sprout className="w-4 h-4" />
-                <span className="hidden lg:inline">Plants</span>
-              </Link>
-            </Button>
 
             <Show when="signed-out">
               <SignInButton />

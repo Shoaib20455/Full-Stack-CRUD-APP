@@ -82,7 +82,9 @@ Full Stack CRUD APP/
 │   │
 │   ├── lib/
 │   │   ├── db.ts                           # Prisma Client singleton
-│   │   └── utils.ts                        # Utility functions
+│   │   ├── utils.ts                        # Utility functions
+│   │   └── data/
+│   │       └── todos.ts                    # 🎯 Data access layer (Prisma queries)
 │   │
 │   ├── payload.config.ts                   # Payload CMS configuration (collections, db, editor)
 │   ├── payload-types.ts                    # ⚠️ AUTO-GENERATED - don't edit
@@ -324,6 +326,107 @@ const todos = await db.todo.findMany({
 └─────────────────────────────────────┘
 ```
 
+### 5. **Data Access Layer Separation** 🏗️
+Prisma queries have been extracted into a dedicated data access layer (`lib/data/todos.ts`) for better code organization and reusability:
+
+**File:** `src/lib/data/todos.ts`
+```typescript
+// Data access layer - all Prisma queries live here
+export async function getCategories() {
+  return await db.category.findMany({
+    orderBy: { name: "asc" }
+  });
+}
+
+export async function getFilteredTodos({ search, categorySlug, page = 1, limit = 5 }: GetTodosArgs) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized access attempt.");
+  
+  // Build where clause with filters
+  const whereClause: Prisma.TodoWhereInput = {
+    userId: userId  // 🛡️ Multi-tenant isolation
+  };
+  
+  if (search) whereClause.title = { contains: search, mode: "insensitive" };
+  if (categorySlug) whereClause.category = { slug: categorySlug };
+  
+  // Fetch with pagination
+  return await db.todo.findMany({
+    where: whereClause,
+    take: limit,
+    skip: (page - 1) * limit,
+    include: { category: { select: { name: true, slug: true } } },
+    orderBy: { createdAt: "desc" }
+  });
+}
+```
+
+**Benefits:**
+- ✅ **Separation of Concerns** - Queries isolated from components
+- ✅ **Reusability** - Same functions used across multiple components
+- ✅ **Testability** - Easy to unit test without mocking components
+- ✅ **Type Safety** - Interface-based parameters with TypeScript
+- ✅ **Maintainability** - Single place to modify query logic
+
+**Hero Component Usage:**
+```typescript
+import { getCategories, getFilteredTodos } from '@/lib/data/todos';
+
+const categories = await getCategories();
+const todos = await getFilteredTodos({ search, categorySlug, page, limit });
+```
+
+---
+
+### 6. **Server Actions with FormData** 📝
+Server actions now accept FormData directly from HTML forms, following Web standards:
+
+**File:** `src/app/(app)/actions.ts`
+```typescript
+// 🎯 Accepts FormData directly - Web API standard
+export async function createTodo(formData: FormData) {
+  // Native extraction using FormData API
+  const title = formData.get("title") as string;
+  const catIdRaw = formData.get("categoryId") as string;
+  const categoryId = catIdRaw ? Number(catIdRaw) : null;
+
+  if (!title || !title.trim()) return;
+  
+  const userId = await getRequiredSession();
+  await db.todo.create({
+    data: { 
+      title: title.trim(),
+      userId,
+      categoryId
+    },
+  });
+  
+  revalidatePath("/");
+}
+```
+
+**HTML Form Usage:**
+```tsx
+<form action={createTodo} className="flex gap-2">
+  <input name="title" placeholder="Write a new task..." required />
+  <select name="categoryId">
+    {categories.map((cat) => (
+      <option key={cat.id} value={cat.id}>{cat.name}</option>
+    ))}
+  </select>
+  <button type="submit">Add Task</button>
+</form>
+```
+
+**Benefits:**
+- ✅ **Web Standards** - Uses native FormData API
+- ✅ **Progressive Enhancement** - Works even with JavaScript disabled
+- ✅ **File Upload Ready** - FormData can include file inputs
+- ✅ **Type Safe** - FormData.get() returns typed values
+- ✅ **No Manual Parsing** - Browser handles serialization
+
+---
+
 ## 🔄 Parallel Routes (@stats Slot)
 
 The `@stats` folder is a **parallel route** - it renders independently alongside main content in the same layout.
@@ -426,24 +529,37 @@ export async function getTodos() {
 ## 📊 How It Works
 
 ### Creating a Todo
-1. User enters title in Hero component
-2. Component calls `createTodo()` server action
-3. Server action: checks auth → validates input → inserts to DB with userId
-4. Payload stores to PostgreSQL via Prisma
-5. `revalidatePath()` refreshes UI
-6. New todo appears in list
+1. User enters title and selects category in Hero component form
+2. Form submits with `action={createTodo}` → sends FormData to server action
+3. `createTodo(formData)` extracts: `title = formData.get("title")`, `categoryId = formData.get("categoryId")`
+4. Server action: checks auth via Clerk → validates input → calls Prisma create
+5. Database inserts todo with `userId`, `title`, and optional `categoryId`
+6. `revalidatePath("/")` refreshes UI automatically
+7. New todo appears in filtered list
+
+### Fetching & Filtering Todos
+1. Hero component imports `getFilteredTodos` from `lib/data/todos.ts`
+2. Calls `getFilteredTodos({ search, categorySlug, page, limit })`
+3. Data access function:
+   - Checks user auth via `await auth()`
+   - Builds Prisma where clause with filters (search, category)
+   - Applies pagination (`skip`, `take`)
+   - Returns filtered todos with category relationships
+4. Hero renders the paginated todo list
+5. User clicks pagination or changes search/category
+6. URL params update → page re-renders → new query executes
 
 ### Viewing Todo Details
 1. User clicks todo title → navigates to `/app/todo/{id}`
-2. Page fetches that specific todo by ID
-3. Database query includes `where: { id, userId }` (security check)
+2. Page calls `getTodoById(id)` from actions
+3. Server verifies `where: { id, userId }` (security check)
 4. 404 if todo doesn't exist or doesn't belong to user
 5. `@stats` slot renders `default.tsx` (hides sidebar)
 
 ### Updating Todo Status
 1. User clicks checkbox to toggle completed status
 2. Calls `toggleTodo(id, completed)` server action
-3. Server verifies user owns todo → updates in DB
+3. Server verifies user owns todo (`where: { id, userId }`) → updates in DB
 4. Cache invalidated → UI refreshes
 
 ---
@@ -451,7 +567,9 @@ export async function getTodos() {
 ## 🚀 Development Keys
 
 **File Purposes:**
-- `actions.ts` - All database operations with auth checks
+- `lib/data/todos.ts` - 🎯 Data access layer (getFilteredTodos, getCategories)
+- `actions.ts` - All database operations with FormData + auth checks
+- `Hero.tsx` - Component that calls data layer and renders todos
 - `layout.tsx` - Grid layout positioning children + stats
 - `@stats/` - Independent sidebar analytics
 - `collections/` - Payload CMS data model configs
@@ -460,6 +578,8 @@ export async function getTodos() {
 - `middleware.ts` - Route protection logic
 
 **Key Concepts:**
+- **Data Access Layer** - Separated Prisma queries in `lib/data/` for reusability
+- **FormData API** - Server actions accept native FormData from HTML forms
 - **Server Actions** - Backend functions that run on server, called from client
 - **Parallel Routes** - Multiple slots (`@children`, `@stats`) render independently
 - **Route Groups** - `(app)` and `(payload)` organize routes without URL changes

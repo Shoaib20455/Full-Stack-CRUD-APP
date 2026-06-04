@@ -1,68 +1,118 @@
-# 🚀 Next.js + Neon DB Task Manager
+# 🚀 Next.js Task Manager
 
-A full-stack CRUD application built with Next.js, Prisma ORM, Neon PostgreSQL, and Clerk Authentication. Features advanced search & filtering with URL-based state persistence and relational database design.
+A full-stack CRUD application for managing tasks with advanced search, filtering, and pagination. Built with Next.js, PostgreSQL, and Prisma with multi-tenant data isolation.
 
 ---
 
-## 🌟 Key Features
+## 🛠️ Technologies
 
-✅ **Full CRUD Operations** - Create, read, update, delete tasks securely  
-✅ **Multi-Tenant Isolation** - Each user sees only their own tasks (Clerk Auth)  
+| Category | Stack |
+|----------|-------|
+| **Frontend** | Next.js 16, React 19, Tailwind CSS, Shadcn UI |
+| **Backend** | Next.js Server Actions, API Routes |
+| **Database** | Neon PostgreSQL, Prisma ORM |
+| **Authentication** | Clerk (Multi-tenant) |
+| **CMS** | Payload CMS (Admin Dashboard) |
+| **Language** | TypeScript |
+
+---
+
+## ✨ Features
+
+✅ **Full CRUD Operations** - Create, read, update, delete tasks  
+✅ **Multi-Tenant Isolation** - Each user sees only their own tasks  
 ✅ **Database Relations** - Todo-to-Category one-to-many relationships  
-✅ **Search & Filter API** - `/api/todos` endpoint with text search and category filtering  
-✅ **URL Query State** - Persistent filtering via URL parameters (`?search=X&category=Y`)  
-✅ **Admin Dashboard** - Payload CMS for managing collections  
+✅ **Search & Filter API** - Text search + category filtering via `/api/todos`  
+✅ **URL Query State** - Persistent filtering (`?search=X&category=Y&page=Z`)  
+✅ **Pagination** - 5 tasks per page for optimized performance  
+✅ **Data Access Layer** - Separated query logic in `lib/data/todos.ts` for reusability  
+✅ **FormData Server Actions** - Native form submission to server actions  
+✅ **Admin Dashboard** - Payload CMS for collection management  
 ✅ **Type Safety** - Full TypeScript + auto-generated types  
 
 ---
 
-## 🛠️ Tech Stack
+## ⌨️ Keyboard Shortcuts
 
-- **Frontend**: Next.js 16 (App Router) + React 19 + Tailwind CSS + Shadcn UI
-- **Backend**: Next.js Server Actions + API Routes
-- **Database**: Neon PostgreSQL + Prisma ORM
-- **CMS**: Payload CMS (Admin dashboard)
-- **Authentication**: Clerk (User login & multi-tenant)
-- **Language**: TypeScript
+Currently no keyboard shortcuts implemented. Add custom shortcuts for:
+- `Ctrl + K` or `Cmd + K` - Quick task search
+- `Ctrl + N` or `Cmd + N` - New task
+- `Esc` - Close modals/dropdowns
 
 ---
 
-## 📋 Prerequisites
+## 🏗️ How It Was Built
 
-- [Node.js](https://nodejs.org/) (v18.x or higher)
-- npm or yarn
-- Git
+**Architecture Decisions:**
 
----
+1. **Next.js App Router** - For file-based routing and server components
+2. **Server Actions** - For secure CRUD operations with built-in auth checks
+3. **FormData API** - Server actions accept native FormData from HTML forms
+4. **Prisma ORM** - For type-safe database queries and relations
+5. **Data Access Layer** - Separated query logic in `lib/data/` for reusability
+6. **URL-based State** - Query parameters (`searchParams`) instead of context for filtering
+7. **Pagination** - Prisma `take` + `skip` for chunked data loading
+8. **Payload CMS** - Separate admin panel with GraphQL + REST APIs
 
-## 🚀 Setup & Run
-
-### 1. Clone the Repository
-
-```bash
-git clone <your-repository-url>
-cd <project-folder-name>
+**Data Flow:**
+```
+HTML Form (native FormData)
+    ↓
+Server Action (createTodo)
+    ↓
+Data Access Layer (lib/data/todos.ts)
+    ↓
+Prisma ORM Query
+    ↓
+PostgreSQL Database
+    ↓
+revalidatePath() → UI Re-renders
 ```
 
-### 2. Install Dependencies
+**Component Flow:**
+```
+SearchInput (client) → Updates URL params
+                    ↓
+page.tsx (server) → Reads searchParams
+                    ↓
+Hero.tsx (server) → Imports data layer functions
+                    ↓
+getFilteredTodos() → Builds Prisma query
+                    ↓
+Database → Returns paginated filtered results
+```
+
+**Key Implementation:**
+- **Data Access**: `getFilteredTodos()` and `getCategories()` in `lib/data/todos.ts`
+- **FormData**: `createTodo(formData: FormData)` extracts fields using `.get()`
+- **Relations**: Todo ↔ Category via foreign key (optional)
+- **Filtering**: Dynamic Prisma where clauses (search + category)
+- **Pagination**: Calculate `skip = (page - 1) * 5`
+- **Security**: Clerk auth + userId filtering on every query
+
+---
+
+## 🚀 Quick Start
+
+### 1. Install & Setup
 
 ```bash
+git clone <repo-url> && cd <project>
 npm install
 ```
 
-### 3. Setup Environment Variables
+### 2. Environment Variables
 
-Create a `.env` file in the root directory:
-
+Create `.env.local`:
 ```env
-DATABASE_URL="postgresql://user:password@ep-xyz-123.us-east-2.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL=postgresql://...
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
-PAYLOAD_SECRET=your-secure-random-secret-key-here
+PAYLOAD_SECRET=random-key
 PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
 ```
 
-### 4. Sync Database & Generate Types
+### 3. Database & Types
 
 ```bash
 npx payload generate:types
@@ -70,98 +120,26 @@ npx prisma db push
 npx prisma generate
 ```
 
-### 5. Run Development Server
+### 4. Run
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
----
-
-## 📚 Features Overview
-
-### Database Relations
-Todos are organized with Categories through a one-to-many relationship:
-```prisma
-Todo has categoryId? → Category (one category per todo, optional)
-Category has todos[] → Todo (one category can have many todos)
-```
-
-### Search & Filter API
-**Endpoint:** `GET /api/todos`
-
-**Query Parameters:**
-- `search` - Search in todo titles (case-insensitive)
-- `category` - Filter by category slug
-
-**Examples:**
-```
-/api/todos?search=meeting
-/api/todos?category=urgent
-/api/todos?search=project&category=critical
-```
-
-### URL Query State
-Filter state is persisted in the URL using query parameters. Users can:
-- Share filtered views with others
-- Use browser back/forward to navigate filter history
-- Bookmark filtered results
-
-**Example URLs:**
-- `http://localhost:3000/?search=bugs` - Tasks with "bugs" in title
-- `http://localhost:3000/?category=urgent` - Urgent tasks only
-- `http://localhost:3000/?search=fix&category=critical` - Filtered by both
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## 📍 Access Points
 
-| Endpoint | Purpose |
-|----------|---------|
-| [http://localhost:3000](http://localhost:3000) | Main app dashboard |
-| [http://localhost:3000/admin](http://localhost:3000/admin) | Payload CMS admin panel |
-| [http://localhost:3000/api/todos](http://localhost:3000/api/todos) | Search & filter API (GET) |
-| [http://localhost:3000/api/graphql](http://localhost:3000/api/graphql) | GraphQL endpoint |
+| URL | Purpose |
+|-----|---------|
+| [localhost:3000](http://localhost:3000) | Main dashboard |
+| [localhost:3000/admin](http://localhost:3000/admin) | Admin panel |
+| [localhost:3000/api/todos](http://localhost:3000/api/todos) | Search API |
 
 ---
 
-## 🔄 Architecture
+## 📖 More Details
 
-### Server Components (async)
-- **page.tsx** - Receives URL `searchParams`, passes to Hero
-- **Hero.tsx** - Fetches and filters todos based on search params
-- **SearchInput.tsx** (client) - Manages URL query state with `useRouter`
-
-### Database Layer
-```
-Client → SearchInput (URL updates) 
-       → page.tsx (reads searchParams)
-       → Hero.tsx (filters with Prisma)
-       → Database (returns filtered todos)
-```
-
-### Data Models
-**Todo:**
-- `id`, `userId`, `title`, `completed`, `createdAt`, `updatedAt`
-- `categoryId` (optional, FK to Category)
-
-**Category:**
-- `id`, `name`, `slug`, `createdAt`, `updatedAt`
-- `todos[]` (relationship to many Todos)
-
----
-
-## 🔒 Security
-
-✅ **Authentication**: Clerk middleware protects routes  
-✅ **Authorization**: Every query filters by current user's ID  
-✅ **Data Isolation**: Users can only access their own todos  
-✅ **Server Actions**: CRUD operations run on server with auth checks  
-
----
-
-## 📖 Documentation
-
-For detailed project structure and feature explanations, see [PROJECT_EXP.md](PROJECT_EXP.md).
+See [PROJECT_EXP.md](PROJECT_EXP.md) for detailed file structure, architecture, and feature explanations.
