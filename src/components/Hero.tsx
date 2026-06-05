@@ -1,12 +1,18 @@
-import React from 'react'
-import { createTodo, deleteTodo, toggleTodo } from "@/app/(app)/actions";
-import Link from 'next/link';
+// src/components/Hero.tsx
+import React, { Suspense } from 'react';
+import { createTodo } from "@/app/(app)/actions";
 import SearchInput from './SearchInput';
-import { getCategories, getFilteredTodos } from '@/lib/data/todos'; // Clean Import
+import TodoListInner, { TodoListSkeleton } from './TodoListInner'; 
+import { getCategories } from '@/lib/data/todos';
 
 interface HeroProps {
   searchParams?: Promise<{ search?: string; category?: string; page?: string }>;
 }
+
+// Simple placeholder loader for the search box
+const SearchInputSkeleton = () => (
+  <div className="h-10 w-full bg-muted/50 border rounded-md animate-pulse" />
+);
 
 const Hero = async ({ searchParams }: HeroProps) => {
   const resolvedParams = await searchParams;
@@ -14,10 +20,8 @@ const Hero = async ({ searchParams }: HeroProps) => {
   const categorySlug = resolvedParams?.category || "";
   const page = Number(resolvedParams?.page) || 1;
   const limit = 5;
-
-  // Fetching data cleanly via Data Access functions
+ 
   const categories = await getCategories();
-  const todos = await getFilteredTodos({ search, categorySlug, page, limit });
 
   return (
     <div className="w-full max-w-2xl bg-card text-card-foreground rounded-xl shadow-sm border p-6 md:p-8 space-y-6">
@@ -28,9 +32,13 @@ const Hero = async ({ searchParams }: HeroProps) => {
       </div>
 
       <div className="h-[1px] bg-border w-full" />
-      <SearchInput />
+      
+      {/* 🚀 FIX: Wrap SearchInput inside Suspense because it reads dynamic URL Search Params */}
+      <Suspense fallback={<SearchInputSkeleton />}>
+        <SearchInput />
+      </Suspense>
 
-      {/* CREATE Form - Using the imported action from your actions file */}
+      {/* CREATE Form */}
       <form action={createTodo} className="flex flex-col sm:flex-row gap-2">
         <input
           type="text"
@@ -55,69 +63,15 @@ const Hero = async ({ searchParams }: HeroProps) => {
         </button>
       </form>
 
-      {/* READ List */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground font-mono px-1">
-          Your Tasks ({todos.length})
-        </h2>
-
-        {todos.length === 0 ? (
-          <div className="text-center py-12 text-sm text-muted-foreground border border-dashed rounded-lg bg-muted/20">
-            No tasks found for this page. Go back or change filters!
-          </div>
-        ) : (
-          <div className="max-h-72 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-            {todos.map((todo) => {
-              // Pre-bind action arguments for cleaner JSX execution
-              const toggleWithId = toggleTodo.bind(null, Number(todo.id), !todo.completed);
-              const deleteWithId = deleteTodo.bind(null, Number(todo.id));
-
-              return (
-                <div key={Number(todo.id)} className="flex items-center justify-between bg-muted/30 border p-4 rounded-lg hover:bg-muted/50 transition-all">
-                  <div className="flex items-center gap-3 flex-1">
-                    {/* Toggle Checkbox */}
-                    <form action={toggleWithId}>
-                      <button
-                        type="submit"
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                          todo.completed ? "bg-primary border-primary text-primary-foreground" : "border-input bg-background"
-                        }`}
-                      >
-                        {todo.completed && (
-                          <svg className="w-3 h-3 stroke-[3.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                        )}
-                      </button>
-                    </form>
-
-                    {/* Title & Badge */}
-                    <div className="flex flex-col items-start gap-0.5">
-                      <Link href={`/todo/${Number(todo.id)}`} className={`text-sm font-medium hover:underline ${todo.completed ? "line-through text-muted-foreground/70" : ""}`}>
-                        {todo.title}
-                      </Link>
-                      {todo.category && (
-                        <span className="text-[10px] px-1.5 py-0.2 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-mono rounded">
-                          {todo.category.name}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Delete Button */}
-                  <form action={deleteWithId}>
-                    <button type="submit" className="text-muted-foreground hover:text-destructive p-1.5 rounded-md hover:bg-destructive/10 transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </form>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Beautifully Isolated Suspense Boundary */}
+      <Suspense key={`${search}-${categorySlug}-${page}`} fallback={<TodoListSkeleton />}>
+        <TodoListInner 
+          search={search} 
+          categorySlug={categorySlug} 
+          page={page} 
+          limit={limit} 
+        />
+      </Suspense>
     </div>
   );
 }

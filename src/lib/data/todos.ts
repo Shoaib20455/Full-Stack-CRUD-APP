@@ -2,9 +2,10 @@
 
 import { db } from '@/lib/db';
 import { Prisma } from '@prisma/client';
-import { auth } from '@clerk/nextjs/server'; // Import your Clerk auth
+import { cacheTag } from 'next/cache';
 
 interface GetTodosArgs {
+  userId: string;
   search?: string;
   categorySlug?: string;
   page?: number;
@@ -12,17 +13,16 @@ interface GetTodosArgs {
 }
 
 export async function getCategories() {
+  "use cache"
   return await db.category.findMany({
     orderBy: { name: "asc" }
   });
 }
 
-export async function getFilteredTodos({ search, categorySlug, page = 1, limit = 5 }: GetTodosArgs) {
-  // 1. Enforce Multi-Tenant Isolation
-  const { userId } = await auth();
-  if (!userId) {
-    throw new Error("Unauthorized access attempt.");
-  }
+export async function getFilteredTodos({ userId, search, categorySlug, page = 1, limit = 5 }: GetTodosArgs) {
+  "use cache"
+
+  cacheTag(`todos-${userId}`); // Cache tag for user-specific todos
 
   const skip = (page - 1) * limit;
 
@@ -49,4 +49,25 @@ export async function getFilteredTodos({ search, categorySlug, page = 1, limit =
     },
     orderBy: { createdAt: "desc" }
   });
+}
+
+export async function getTodoStats(userId: string) {
+  "use cache";
+  
+  // Tag bilkul wahi rakhna hai jo create/delete actions mein clear ho raha hai
+  cacheTag(`todos-${userId}`);
+
+  const allTodos = await db.todo.findMany({
+    where: { userId },
+    select: { completed: true } // Optimization: Sirf status uthao, poora data nahi
+  });
+
+  const completedCount = allTodos.filter(t => t.completed).length;
+  const pendingCount = allTodos.length - completedCount;
+
+  return {
+    totalCount: allTodos.length,
+    completedCount,
+    pendingCount
+  };
 }

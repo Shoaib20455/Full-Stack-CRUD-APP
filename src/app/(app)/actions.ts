@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 /**
  * Helper function: Check karta ha ke user logged in ha ya nahi.
@@ -35,8 +35,8 @@ export async function createTodo(formData: FormData) {
         categoryId: categoryId ? categoryId : null
       },
     });
-    
-    revalidatePath("/"); // Frontend UI ko refresh karne ke liye
+    updateTag(`todos-${userId}`); // Cache tag ko update karo taki list fresh ho jaye
+    //revalidatePath("/"); // Frontend UI ko refresh karne ke liye
   } catch (error) {
     console.error("Error creating todo:", error);
   }
@@ -56,7 +56,7 @@ export async function toggleTodo(id: number, completed: boolean) {
         completed: completed 
       },
     });
-    
+    updateTag(`todos-${userId}`);
     revalidatePath("/");
   } catch (error) {
     console.error("Error updating todo:", error);
@@ -74,7 +74,7 @@ export async function deleteTodo(id: number) {
         userId: userId 
       },
     });
-    
+    updateTag(`todos-${userId}`);
     revalidatePath("/");
   } catch (error) {
     console.error("Error deleting todo:", error);
