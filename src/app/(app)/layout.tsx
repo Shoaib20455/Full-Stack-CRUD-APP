@@ -34,22 +34,22 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* 🚀 FIX 1: Added 'dynamic' attribute for Next.js 15 PPR compilation safety */}
-        <ClerkProvider dynamic>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <Navbar />
+        {/* 🚀 THEME PRESERVER: Placed outside Suspense to avoid script-tag hydration issues in React 19 */}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {/* 🚀 FIX: Wrap dynamic content in Suspense to handle Clerk's session reads in Next.js 16 */}
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center font-mono text-sm text-muted-foreground animate-pulse">
+              Booting System...
+            </div>
+          }>
+            <ClerkProvider dynamic>
+              <Navbar />
 
-            {/* 🚀 FIX 2: Main outer Suspense wrapper to handle runtime session reads safely */}
-            <Suspense fallback={
-              <div className="max-w-6xl mx-auto p-4 md:p-6 text-center font-mono text-sm text-muted-foreground">
-                Loading Application Shell...
-              </div>
-            }>
               <main className="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
                 {/* Left Side: Todo list (takes 2 columns on desktop) */}
                 <div className="md:col-span-2">
@@ -65,9 +65,9 @@ export default function RootLayout({
                   {stats}
                 </Suspense>
               </main>
-            </Suspense>
-          </ThemeProvider>
-        </ClerkProvider>
+            </ClerkProvider>
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   );
