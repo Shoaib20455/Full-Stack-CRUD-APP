@@ -1,4 +1,4 @@
-import { getTodoById } from "@/app/actions";
+import { getTodoById } from "../../actions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, ShieldCheck, Tag } from "lucide-react";
@@ -11,9 +11,15 @@ interface TodoDetailPageProps {
 
 export default async function TodoDetailPage({ params }: TodoDetailPageProps) {
   const { id } = await params;
-  
+  // 🔥 FIX: id ko Number mein convert kiya kyunki hamara database ab Int accept karta hai
+  const todoId = Number(id);
+
+  // Agar URL mein integer na ho (e.g. /todo/abc), to direct 404 dikhao
+  if (isNaN(todoId)) {
+    notFound();
+  }
   // Database se us specific ID ka data fetch kar rahe hain
-  const todo = await getTodoById(id);
+  const todo = await getTodoById(todoId);
 
   // Agar task database mein nahi mila ya user ka apna nahi hai to direct 404 page dikhao
   if (!todo) {

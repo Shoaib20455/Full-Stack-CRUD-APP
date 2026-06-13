@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,12 +6,142 @@ datasource db {
   provider = "postgresql"
 }
 
-// For testing, Ye aik simple sa model ha
 model Todo {
-  id        String   @id @default(cuid())
-  userId    String
-  title     String
-  completed Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                            Int                             @id @default(autoincrement())
+  userId                        String                          @map("user_id") @db.VarChar
+  title                         String                          @db.VarChar
+  completed                     Boolean?                        @default(false)
+  createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                     DateTime                        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  categoryId                    Int?                            @map("category_id")
+  payload_locked_documents_rels payload_locked_documents_rels[]
+  category                      Category?                       @relation(fields: [categoryId], references: [id], onUpdate: NoAction, map: "todo_category_id_category_id_fk")
+
+  @@index([categoryId], map: "todo_category_idx")
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("todo")
+}
+
+model Category {
+  id                            Int                             @id @default(autoincrement())
+  name                          String                          @unique(map: "category_name_idx") @db.VarChar
+  slug                          String                          @unique(map: "category_slug_idx") @db.VarChar
+  createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                     DateTime                        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  payload_locked_documents_rels payload_locked_documents_rels[]
+  todos                         Todo[]
+
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@map("category")
+}
+
+model payload_kv {
+  id   Int    @id @default(autoincrement())
+  key  String @unique(map: "payload_kv_key_idx") @db.VarChar
+  data Json
+}
+
+model payload_locked_documents {
+  id                            Int                             @id @default(autoincrement())
+  global_slug                   String?                         @db.VarChar
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  payload_locked_documents_rels payload_locked_documents_rels[]
+
+  @@index([created_at])
+  @@index([global_slug])
+  @@index([updated_at])
+}
+
+model payload_locked_documents_rels {
+  id                       Int                      @id @default(autoincrement())
+  order                    Int?
+  parent_id                Int
+  path                     String                   @db.VarChar
+  users_id                 Int?
+  todo_id                  Int?
+  category_id              Int?
+  category                 Category?                @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_categories_fk")
+  payload_locked_documents payload_locked_documents @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_parent_fk")
+  todo                     Todo?                    @relation(fields: [todo_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_todos_fk")
+  users                    users?                   @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_locked_documents_rels_users_fk")
+
+  @@index([category_id])
+  @@index([order])
+  @@index([parent_id], map: "payload_locked_documents_rels_parent_idx")
+  @@index([path])
+  @@index([todo_id])
+  @@index([users_id])
+}
+
+model payload_migrations {
+  id         Int      @id @default(autoincrement())
+  name       String?  @db.VarChar
+  batch      Decimal? @db.Decimal
+  updated_at DateTime @default(now()) @db.Timestamptz(3)
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([created_at])
+  @@index([updated_at])
+}
+
+model payload_preferences {
+  id                       Int                        @id @default(autoincrement())
+  key                      String?                    @db.VarChar
+  value                    Json?
+  updated_at               DateTime                   @default(now()) @db.Timestamptz(3)
+  created_at               DateTime                   @default(now()) @db.Timestamptz(3)
+  payload_preferences_rels payload_preferences_rels[]
+
+  @@index([created_at])
+  @@index([key])
+  @@index([updated_at])
+}
+
+model payload_preferences_rels {
+  id                  Int                 @id @default(autoincrement())
+  order               Int?
+  parent_id           Int
+  path                String              @db.VarChar
+  users_id            Int?
+  payload_preferences payload_preferences @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_preferences_rels_parent_fk")
+  users               users?              @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "payload_preferences_rels_users_fk")
+
+  @@index([order])
+  @@index([parent_id], map: "payload_preferences_rels_parent_idx")
+  @@index([path])
+  @@index([users_id])
+}
+
+model users {
+  id                            Int                             @id @default(autoincrement())
+  updated_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  created_at                    DateTime                        @default(now()) @db.Timestamptz(3)
+  email                         String                          @unique(map: "users_email_idx") @db.VarChar
+  reset_password_token          String?                         @db.VarChar
+  reset_password_expiration     DateTime?                       @db.Timestamptz(3)
+  salt                          String?                         @db.VarChar
+  hash                          String?                         @db.VarChar
+  login_attempts                Decimal?                        @default(0) @db.Decimal
+  lock_until                    DateTime?                       @db.Timestamptz(3)
+  payload_locked_documents_rels payload_locked_documents_rels[]
+  payload_preferences_rels      payload_preferences_rels[]
+  users_sessions                users_sessions[]
+
+  @@index([created_at])
+  @@index([updated_at])
+}
+
+model users_sessions {
+  order      Int       @map("_order")
+  parent_id  Int       @map("_parent_id")
+  id         String    @id @db.VarChar
+  created_at DateTime? @db.Timestamptz(3)
+  expires_at DateTime  @db.Timestamptz(3)
+  users      users     @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "users_sessions_parent_id_fk")
+
+  @@index([order], map: "users_sessions_order_idx")
+  @@index([parent_id], map: "users_sessions_parent_id_idx")
 }

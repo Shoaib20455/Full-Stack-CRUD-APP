@@ -1,141 +1,145 @@
-# 🚀 Next.js + Neon DB Task Manager (With Clerk Auth)
+# 🚀 Next.js Task Manager
 
-A secure, full-stack production-ready CRUD application built with Next.js (App Router), Prisma ORM, Neon PostgreSQL, and Clerk Authentication. This project showcases dynamic route protection and data isolation based on individual user accounts.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework:** Next.js (App Router)
-- **Database:** Neon PostgreSQL (Serverless)
-- **ORM:** Prisma
-- **Auth:** Clerk Authentication
-- **Styling:** Tailwind CSS + Shadcn UI token-based theme synchronization
+A full-stack CRUD application for managing tasks with advanced search, filtering, and pagination. Built with Next.js, PostgreSQL, and Prisma with multi-tenant data isolation.
 
 ---
 
-## 📋 Prerequisites
+## 🛠️ Technologies
 
-Before you begin, ensure you have the following installed on your machine:
-
-- [Node.js](https://nodejs.org/) (v18.x or higher recommended)
-- [npm](https://www.npmjs.com/) or yarn
-- Git
-
----
-
-## 🚀 Getting Started & Local Setup
-
-Follow these step-by-step instructions to get a local copy up and running:
-
-### 1. Clone the Repository
-
-```bash
-git clone <your-repository-url>
-cd <project-folder-name>
-```
-
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-### 3. Setup Environment Variables
-
-Create a `.env` file in the root directory of your project and populate it with your environment keys from Neon DB and Clerk dashboards:
-
-```env
-# Database connection string from Neon Console
-DATABASE_URL="postgresql://user:password@ep-xyz-123.us-east-2.aws.neon.tech/neondb?sslmode=require"
-
-# Clerk Authentication Keys (From Clerk Dashboard)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-```
-
-### 4. Sync the Database Schema
-
-Generate the Prisma client and push your data models directly to your Neon cloud database:
-
-```bash
-# Push schema structure to Neon Postgres
-npx prisma db push
-
-# Generate fresh TypeScript types for your Prisma Client
-npx prisma generate
-```
-
-### 5. Run the Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Category | Stack |
+|----------|-------|
+| **Frontend** | Next.js 16, React 19, Tailwind CSS, Shadcn UI |
+| **Backend** | Next.js Server Actions, API Routes |
+| **Database** | Neon PostgreSQL, Prisma ORM |
+| **Authentication** | Clerk (Multi-tenant) |
+| **CMS** | Payload CMS (Admin Dashboard) |
+| **Language** | TypeScript |
 
 ---
 
 ## ✨ Features
 
-### Full CRUD Operations
-- **Create:** Add new tasks via the input form on the dashboard.
-- **Read:** View all your personal tasks, fetched securely from the database.
-- **Update:** Toggle a task's completion status with a single click.
-- **Delete:** Remove tasks permanently with the delete button.
-
-### Dynamic Task Detail Pages
-Clicking on any task title navigates to a dedicated detail page at `/todo/[id]`. This page displays:
-- Task title and completion status badge.
-- The unique Task ID from the database.
-- The timestamp of when the task was created.
-- The owner's Clerk identity (userId) for transparency.
-
-A **Back to Dashboard** button is included on every detail page for easy navigation. If a task ID does not exist or does not belong to the logged-in user, Next.js automatically renders a `404 Not Found` page.
+✅ **Full CRUD Operations** - Create, read, update, delete tasks  
+✅ **Multi-Tenant Isolation** - Each user sees only their own tasks  
+✅ **Database Relations** - Todo-to-Category one-to-many relationships  
+✅ **Search & Filter API** - Text search + category filtering via `/api/todos`  
+✅ **URL Query State** - Persistent filtering (`?search=X&category=Y&page=Z`)  
+✅ **Pagination** - 5 tasks per page for optimized performance  
+✅ **Data Access Layer** - Separated query logic in `lib/data/todos.ts` for reusability  
+✅ **FormData Server Actions** - Native form submission to server actions  
+✅ **Admin Dashboard** - Payload CMS for collection management  
+✅ **Type Safety** - Full TypeScript + auto-generated types  
 
 ---
 
-## 🔒 Security & Data Isolation Architecture
+## ⌨️ Keyboard Shortcuts
 
-This project is built with strict multi-tenant data privacy:
-
-- **Authentication Gateway:** Users must log in via Clerk to interact with the database.
-- **Server-Level Validation:** Every CRUD interaction in `src/app/actions.ts` runs a server-side session check via `auth()` before processing.
-- **No Cross-Data Contamination:** Every item written to the `Todo` table is stamped with a unique `userId`. SQL operations filter results using `where: { userId }`, preventing users from reading, updating, or deleting another user's data even if database record IDs are exposed.
-- **Secure Single Record Fetching:** The `getTodoById(id)` server action validates both the task `id` and the logged-in `userId` simultaneously, so no user can access another user's task detail page by guessing a URL.
+Currently no keyboard shortcuts implemented. Add custom shortcuts for:
+- `Ctrl + K` or `Cmd + K` - Quick task search
+- `Ctrl + N` or `Cmd + N` - New task
+- `Esc` - Close modals/dropdowns
 
 ---
 
-## 📂 Project Structure Highlights
+## 🏗️ How It Was Built
 
-```plaintext
-├── src/
-│   ├── app/
-│   │   ├── actions.ts              # Secure Server Actions (CRUD + getTodoById)
-│   │   ├── page.tsx                # Main entry point with dynamic login/dashboard checks
-│   │   ├── middleware.ts           # Clerk routing rules & route protectors
-│   │   └── todo/
-│   │       └── [id]/
-│   │           └── page.tsx        # Dynamic Task Detail Page
-│   ├── components/
-│   │   ├── Hero.tsx                # Main UI with interactive CRUD + clickable task links
-│   │   └── Navbar.tsx              # Global sticky navbar synced with Shadcn UI parameters
-│   └── lib/
-│       └── db.ts                   # Singleton Prisma Client instance
-├── prisma/
-│   └── schema.prisma               # Database architecture and model specs
-└── .env                            # Local environment keys (Secret)
+**Architecture Decisions:**
+
+1. **Next.js App Router** - For file-based routing and server components
+2. **Server Actions** - For secure CRUD operations with built-in auth checks
+3. **FormData API** - Server actions accept native FormData from HTML forms
+4. **Prisma ORM** - For type-safe database queries and relations
+5. **Data Access Layer** - Separated query logic in `lib/data/` for reusability
+6. **URL-based State** - Query parameters (`searchParams`) instead of context for filtering
+7. **Pagination** - Prisma `take` + `skip` for chunked data loading
+8. **Payload CMS** - Separate admin panel with GraphQL + REST APIs
+
+**Data Flow:**
+```
+HTML Form (native FormData)
+    ↓
+Server Action (createTodo)
+    ↓
+Data Access Layer (lib/data/todos.ts)
+    ↓
+Prisma ORM Query
+    ↓
+PostgreSQL Database
+    ↓
+revalidatePath() → UI Re-renders
 ```
 
+**Component Flow:**
+```
+SearchInput (client) → Updates URL params
+                    ↓
+page.tsx (server) → Reads searchParams
+                    ↓
+Hero.tsx (server) → Imports data layer functions
+                    ↓
+getFilteredTodos() → Builds Prisma query
+                    ↓
+Database → Returns paginated filtered results
+```
+
+**Key Implementation:**
+- **Data Access**: `getFilteredTodos()` and `getCategories()` in `lib/data/todos.ts`
+- **FormData**: `createTodo(formData: FormData)` extracts fields using `.get()`
+- **Relations**: Todo ↔ Category via foreign key (optional)
+- **Filtering**: Dynamic Prisma where clauses (search + category)
+- **Pagination**: Calculate `skip = (page - 1) * 5`
+- **Security**: Clerk auth + userId filtering on every query
+
 ---
 
-## 🔧 Future Maintenance Commands
+## 🚀 Quick Start
 
-If you modify the database models inside `prisma/schema.prisma` in the future, always run:
+### 1. Install & Setup
 
 ```bash
+git clone <repo-url> && cd <project>
+npm install
+```
+
+### 2. Environment Variables
+
+Create `.env.local`:
+```env
+DATABASE_URL=postgresql://...
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+PAYLOAD_SECRET=random-key
+PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
+```
+
+### 3. Database & Types
+
+```bash
+npx payload generate:types
 npx prisma db push
 npx prisma generate
 ```
 
-> **Note:** If VS Code displays type errors after a database change, press `Ctrl + Shift + P` (or `Cmd + Shift + P` on Mac) and choose **"TypeScript: Restart TS Server"**.
+### 4. Run
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📍 Access Points
+
+| URL | Purpose |
+|-----|---------|
+| [localhost:3000](http://localhost:3000) | Main dashboard |
+| [localhost:3000/admin](http://localhost:3000/admin) | Admin panel |
+| [localhost:3000/api/todos](http://localhost:3000/api/todos) | Search API |
+
+---
+
+## 📖 More Details
+
+See [PROJECT_EXP.md](PROJECT_EXP.md) for detailed file structure, architecture, and feature explanations.
