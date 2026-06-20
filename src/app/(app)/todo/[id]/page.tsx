@@ -1,7 +1,8 @@
-import { getTodoById } from "../../actions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { ArrowLeft, Calendar, ShieldCheck, Tag } from "lucide-react";
+import { getTodoById } from "@/lib/data/todos";
 
 interface TodoDetailPageProps {
   params: Promise<{
@@ -18,8 +19,13 @@ export default async function TodoDetailPage({ params }: TodoDetailPageProps) {
   if (isNaN(todoId)) {
     notFound();
   }
+  const { userId } = await auth();
+  if (!userId) {
+    notFound();
+  }
+
   // Database se us specific ID ka data fetch kar rahe hain
-  const todo = await getTodoById(todoId);
+  const todo = await getTodoById(userId, todoId);
 
   // Agar task database mein nahi mila ya user ka apna nahi hai to direct 404 page dikhao
   if (!todo) {

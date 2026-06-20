@@ -54,21 +54,33 @@ export async function getFilteredTodos({ userId, search, categorySlug, page = 1,
 
 export async function getTodoStats(userId: string) {
   "use cache";
-  
+
   // Tag bilkul wahi rakhna hai jo create/delete actions mein clear ho raha hai
   cacheTag(`todos-${userId}`);
 
-  const allTodos = await db.todo.findMany({
-    where: { userId },
-    select: { completed: true } // Optimization: Sirf status uthao, poora data nahi
-  });
-
-  const completedCount = allTodos.filter(t => t.completed).length;
-  const pendingCount = allTodos.length - completedCount;
+  const [totalCount, completedCount] = await Promise.all([
+    db.todo.count({ where: { userId } }),
+    db.todo.count({ where: { userId, completed: true } })
+  ]);
 
   return {
-    totalCount: allTodos.length,
     completedCount,
-    pendingCount
+    pendingCount: totalCount - completedCount
   };
+}
+
+export async function getTodoById(userId: string, id: number) {
+  "use cache";
+
+  cacheTag(`todos-${userId}`);
+
+  return await db.todo.findFirst({
+    where: {
+      id,
+      userId
+    },
+    include: {
+      category: true
+    }
+  });
 }

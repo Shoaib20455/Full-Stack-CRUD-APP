@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
 import { updateTag } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 
 async function getRequiredSession() {
   const { userId } = await auth();
@@ -65,24 +65,4 @@ export async function deleteTodo(id: number) {
 // 5. READ SINGLE RECORD
 export async function revalidateCategories() {
   updateTag('categories')
-}
-
-export async function getTodoById(id: number) {
-  try {
-    const { userId } = await auth();
-    if (!userId) return null;
-
-    return await db.todo.findFirst({
-      where: {
-        id: id,
-        userId: userId
-      },
-      include: {
-        category: true
-      } as any
-    });
-  } catch (error) {
-    console.error("Error fetching single todo:", error);
-    return null;
-  }
 }

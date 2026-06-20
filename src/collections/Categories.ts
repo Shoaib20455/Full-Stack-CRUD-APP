@@ -1,4 +1,8 @@
 import { CollectionConfig } from 'payload'
+import {
+  revalidateCategoriesAfterChangeHook,
+  revalidateCategoriesAfterDeleteHook,
+} from './hooks/revalidateCategories'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
@@ -20,4 +24,8 @@ export const Categories: CollectionConfig = {
       unique: true,
     },
   ],
+  hooks: {
+    afterChange: [revalidateCategoriesAfterChangeHook],
+    afterDelete: [revalidateCategoriesAfterDeleteHook],
+  },
 }

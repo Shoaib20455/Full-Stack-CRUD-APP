@@ -8,8 +8,8 @@ datasource db {
 
 model Todo {
   id                            Int                             @id @default(autoincrement())
-  userId                        String                          @map("user_id") @db.VarChar
-  title                         String                          @db.VarChar
+  userId                        String                          @map("user_id") @db.VarChar(255)
+  title                         String                          @db.VarChar(255)
   completed                     Boolean?                        @default(false)
   createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                     DateTime                        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -17,6 +17,8 @@ model Todo {
   payload_locked_documents_rels payload_locked_documents_rels[]
   category                      Category?                       @relation(fields: [categoryId], references: [id], onUpdate: NoAction, map: "todo_category_id_category_id_fk")
 
+  @@index([userId])
+  @@index([userId, completed])
   @@index([categoryId], map: "todo_category_idx")
   @@index([createdAt])
   @@index([updatedAt])
@@ -25,8 +27,8 @@ model Todo {
 
 model Category {
   id                            Int                             @id @default(autoincrement())
-  name                          String                          @unique(map: "category_name_idx") @db.VarChar
-  slug                          String                          @unique(map: "category_slug_idx") @db.VarChar
+  name                          String                          @unique(map: "category_name_idx") @db.VarChar(255)
+  slug                          String                          @unique(map: "category_slug_idx") @db.VarChar(255)
   createdAt                     DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                     DateTime                        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
   payload_locked_documents_rels payload_locked_documents_rels[]

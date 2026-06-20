@@ -1,8 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { Button } from "./ui/button";
-import { HomeIcon, Sprout } from "lucide-react";
-import ModeToggle from "./ModeToggle";
+import { HomeIcon } from "lucide-react";
 import { SignInButton, SignUpButton, UserButton, Show } from "@clerk/nextjs";
 
 const Navbar = () => {

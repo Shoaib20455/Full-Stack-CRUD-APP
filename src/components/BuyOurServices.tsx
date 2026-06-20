@@ -1,26 +1,20 @@
-"use client"
-import React from 'react'
 import { Button } from "@/components/ui/button";
-import { useUser } from '@clerk/nextjs'
-const BuyOurServices = () => {
-const { isSignedIn, user, isLoaded } = useUser()
+import { currentUser } from "@clerk/nextjs/server";
 
-  // Handle loading state
-  if (!isLoaded) return <div>Loading...</div>
+const BuyOurServices = async () => {
+  const user = await currentUser();
 
-  // Protect the page from unauthenticated users
-  if (!isSignedIn) return <div>Sign in to view this page</div>
+  if (!user) return <div>Sign in to view this page</div>;
 
-  
   return (
-    <div>Now you can buy out Services {user.firstName}!
+    <div>Now you can buy out Services {user.firstName || "friend"}!
 
 <div className="p-4"> 
      
       <Button>Buy</Button>
     </div> 
     </div>
-  )
+)
 }
 
 export default BuyOurServices

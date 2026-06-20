@@ -6,8 +6,6 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-let prisma: PrismaClient;
- 
 if (!globalForPrisma.prisma) {
   // Neon PostgreSQL connection pool setup
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
@@ -16,6 +14,6 @@ if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = new PrismaClient({ adapter });
 }
 
-prisma = globalForPrisma.prisma;
+const prisma = globalForPrisma.prisma;
 
 export { prisma as db };
