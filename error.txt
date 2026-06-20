@@ -1,0 +1,26 @@
+17:05:39.571 
+    ./src/payload.config.ts
+17:05:39.571 
+    ./src/app/(payload)/api/graphql-playground/route.ts
+17:05:39.572 
+17:05:39.572 
+  Server Component:
+17:05:39.572 
+    ./node_modules/@payloadcms/drizzle/dist/postgres/requireDrizzleKit.js
+17:05:39.572 
+    ./node_modules/@payloadcms/db-postgres/dist/index.js
+17:05:39.572 
+    ./src/payload.config.ts
+17:05:39.572 
+    ./src/app/(payload)/admin/[[...segments]]/page.tsx
+17:05:39.572 
+17:05:39.572 
+https://nextjs.org/docs/messages/module-not-found
+17:05:39.572 
+17:05:39.573 
+17:05:39.573 
+    at ./node_modules/ (payloadcms/drizzle/dist/postgres/requireDrizzleKit.js:4:82)
+17:05:39.573 
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+17:05:39.689 
+Error: Command "npm run build" exited with 1
