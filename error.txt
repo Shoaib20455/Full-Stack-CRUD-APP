@@ -1,51 +1,51 @@
-17:58:12.926 Running build in Washington, D.C., USA (East) – iad1
-17:58:12.927 Build machine configuration: 2 cores, 8 GB
-17:58:13.066 Cloning github.com/Shoaib20455/Full-Stack-CRUD-APP (Branch: main, Commit: 138548c)
-17:58:13.068 Previous build caches not available.
-17:58:13.331 Cloning completed: 263.000ms
-17:58:13.833 Running "vercel build"
-17:58:13.944 Vercel CLI 54.14.0
-17:58:14.357 Warning: Detected "engines": { "node": ">=20.0.0" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: https://vercel.link/node-version
-17:58:14.399 Installing dependencies...
-17:58:28.462 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
-17:58:28.520 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
-17:58:29.422 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
-17:59:02.154 
-17:59:02.154 added 1073 packages in 48s
-17:59:02.155 
-17:59:02.155 330 packages are looking for funding
-17:59:02.156   run `npm fund` for details
-17:59:02.291 Detected Next.js version: 16.2.6
-17:59:02.313 Running "npm run build"
-17:59:02.477 
-17:59:02.477 > my-app@0.1.0 build
-17:59:02.478 > next build
-17:59:02.478 
-17:59:03.204   Applying modifyConfig from Vercel
-17:59:03.211 Attention: Next.js now collects completely anonymous telemetry regarding usage.
-17:59:03.211 This information is used to shape Next.js' roadmap and prioritize features.
-17:59:03.212 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-17:59:03.212 https://nextjs.org/telemetry
-17:59:03.212 
-17:59:03.246 ▲ Next.js 16.2.6 (Turbopack)
-17:59:03.247 - Cache Components enabled
-17:59:03.248 - Experiments (use with caution):
-17:59:03.249   ⨯ turbopackServerFastRefresh
-17:59:03.249 
-17:59:03.291   Creating an optimized production build ...
-17:59:52.672 ✓ Compiled successfully in 49s
-17:59:52.686   Running TypeScript ...
-18:00:01.279 Failed to type check.
-18:00:01.280 
-18:00:01.282 ./src/components/Hero.tsx:56:28
-18:00:01.282 Type error: Parameter 'cat' implicitly has an 'any' type.
-18:00:01.282 
-18:00:01.282   54 |         >
-18:00:01.282   55 |           <option value="">No Category</option>
-18:00:01.282 > 56 |           {categories.map((cat) => (
-18:00:01.282      |                            ^
-18:00:01.283   57 |             <option key={cat.id} value={cat.id}>{cat.name}</option>
-18:00:01.283   58 |           ))}
-18:00:01.283   59 |         </select>
-18:00:01.366 Next.js build worker exited with code: 1 and signal: null
-18:00:01.514 Error: Command "npm run build" exited with 1
+18:09:15.195 Running build in Washington, D.C., USA (East) – iad1
+18:09:15.196 Build machine configuration: 2 cores, 8 GB
+18:09:15.334 Cloning github.com/Shoaib20455/Full-Stack-CRUD-APP (Branch: main, Commit: 2249555)
+18:09:15.336 Previous build caches not available.
+18:09:15.621 Cloning completed: 286.000ms
+18:09:16.012 Running "vercel build"
+18:09:16.200 Vercel CLI 54.14.0
+18:09:16.565 Warning: Detected "engines": { "node": ">=20.0.0" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: https://vercel.link/node-version
+18:09:16.603 Installing dependencies...
+18:09:31.448 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+18:09:31.512 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+18:09:32.298 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+18:10:05.929 
+18:10:05.930 added 1073 packages in 48s
+18:10:05.931 
+18:10:05.932 330 packages are looking for funding
+18:10:05.933   run `npm fund` for details
+18:10:06.054 Detected Next.js version: 16.2.6
+18:10:06.076 Running "npm run build"
+18:10:06.558 
+18:10:06.558 > my-app@0.1.0 build
+18:10:06.559 > next build
+18:10:06.559 
+18:10:09.532   Applying modifyConfig from Vercel
+18:10:09.538 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+18:10:09.539 This information is used to shape Next.js' roadmap and prioritize features.
+18:10:09.540 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+18:10:09.540 https://nextjs.org/telemetry
+18:10:09.540 
+18:10:09.563 ▲ Next.js 16.2.6 (Turbopack)
+18:10:09.565 - Cache Components enabled
+18:10:09.565 - Experiments (use with caution):
+18:10:09.565   ⨯ turbopackServerFastRefresh
+18:10:09.565 
+18:10:09.613   Creating an optimized production build ...
+18:10:58.324 ✓ Compiled successfully in 48s
+18:10:58.356   Running TypeScript ...
+18:11:07.016 Failed to type check.
+18:11:07.016 
+18:11:07.018 ./src/components/TodoListInner.tsx:48:23
+18:11:07.018 Type error: Parameter 'todo' implicitly has an 'any' type.
+18:11:07.018 
+18:11:07.019   46 |       ) : (
+18:11:07.019   47 |         <div className="max-h-72 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+18:11:07.020 > 48 |           {todos.map((todo) => {
+18:11:07.020      |                       ^
+18:11:07.020   49 |             const toggleWithId = toggleTodo.bind(null, Number(todo.id), !todo.completed);
+18:11:07.020   50 |             const deleteWithId = deleteTodo.bind(null, Number(todo.id));
+18:11:07.021   51 |
+18:11:07.106 Next.js build worker exited with code: 1 and signal: null
+18:11:07.246 Error: Command "npm run build" exited with 1

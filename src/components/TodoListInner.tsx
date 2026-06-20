@@ -31,7 +31,8 @@ const TodoListInner = async ({ search, categorySlug, page, limit }: TodoListInne
   }
 
   // 🎯 Extracted userId explicitly sent inside arguments wrapper
-  const todos = await getFilteredTodos({ userId, search, categorySlug, page, limit });
+  type TodoItem = { id: number; title: string; completed: boolean; category: { name: string; slug: string } | null };
+  const todos: TodoItem[] = await getFilteredTodos({ userId, search, categorySlug, page, limit });
 
   return (
     <div className="space-y-3">
