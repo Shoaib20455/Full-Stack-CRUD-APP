@@ -21,7 +21,8 @@ const Hero = async ({ searchParams }: HeroProps) => {
   const page = Number(resolvedParams?.page) || 1;
   const limit = 5;
  
-  const categories = await getCategories();
+  type Category = { id: number; name: string; slug: string };
+  const categories: Category[] = await getCategories();
 
   return (
     <div className="w-full max-w-2xl bg-card text-card-foreground rounded-xl shadow-sm border p-6 md:p-8 space-y-6">

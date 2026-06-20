@@ -1,26 +1,51 @@
-17:05:39.571 
-    ./src/payload.config.ts
-17:05:39.571 
-    ./src/app/(payload)/api/graphql-playground/route.ts
-17:05:39.572 
-17:05:39.572 
-  Server Component:
-17:05:39.572 
-    ./node_modules/@payloadcms/drizzle/dist/postgres/requireDrizzleKit.js
-17:05:39.572 
-    ./node_modules/@payloadcms/db-postgres/dist/index.js
-17:05:39.572 
-    ./src/payload.config.ts
-17:05:39.572 
-    ./src/app/(payload)/admin/[[...segments]]/page.tsx
-17:05:39.572 
-17:05:39.572 
-https://nextjs.org/docs/messages/module-not-found
-17:05:39.572 
-17:05:39.573 
-17:05:39.573 
-    at ./node_modules/ (payloadcms/drizzle/dist/postgres/requireDrizzleKit.js:4:82)
-17:05:39.573 
-    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
-17:05:39.689 
-Error: Command "npm run build" exited with 1
+17:58:12.926 Running build in Washington, D.C., USA (East) – iad1
+17:58:12.927 Build machine configuration: 2 cores, 8 GB
+17:58:13.066 Cloning github.com/Shoaib20455/Full-Stack-CRUD-APP (Branch: main, Commit: 138548c)
+17:58:13.068 Previous build caches not available.
+17:58:13.331 Cloning completed: 263.000ms
+17:58:13.833 Running "vercel build"
+17:58:13.944 Vercel CLI 54.14.0
+17:58:14.357 Warning: Detected "engines": { "node": ">=20.0.0" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: https://vercel.link/node-version
+17:58:14.399 Installing dependencies...
+17:58:28.462 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+17:58:28.520 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+17:58:29.422 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+17:59:02.154 
+17:59:02.154 added 1073 packages in 48s
+17:59:02.155 
+17:59:02.155 330 packages are looking for funding
+17:59:02.156   run `npm fund` for details
+17:59:02.291 Detected Next.js version: 16.2.6
+17:59:02.313 Running "npm run build"
+17:59:02.477 
+17:59:02.477 > my-app@0.1.0 build
+17:59:02.478 > next build
+17:59:02.478 
+17:59:03.204   Applying modifyConfig from Vercel
+17:59:03.211 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+17:59:03.211 This information is used to shape Next.js' roadmap and prioritize features.
+17:59:03.212 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+17:59:03.212 https://nextjs.org/telemetry
+17:59:03.212 
+17:59:03.246 ▲ Next.js 16.2.6 (Turbopack)
+17:59:03.247 - Cache Components enabled
+17:59:03.248 - Experiments (use with caution):
+17:59:03.249   ⨯ turbopackServerFastRefresh
+17:59:03.249 
+17:59:03.291   Creating an optimized production build ...
+17:59:52.672 ✓ Compiled successfully in 49s
+17:59:52.686   Running TypeScript ...
+18:00:01.279 Failed to type check.
+18:00:01.280 
+18:00:01.282 ./src/components/Hero.tsx:56:28
+18:00:01.282 Type error: Parameter 'cat' implicitly has an 'any' type.
+18:00:01.282 
+18:00:01.282   54 |         >
+18:00:01.282   55 |           <option value="">No Category</option>
+18:00:01.282 > 56 |           {categories.map((cat) => (
+18:00:01.282      |                            ^
+18:00:01.283   57 |             <option key={cat.id} value={cat.id}>{cat.name}</option>
+18:00:01.283   58 |           ))}
+18:00:01.283   59 |         </select>
+18:00:01.366 Next.js build worker exited with code: 1 and signal: null
+18:00:01.514 Error: Command "npm run build" exited with 1
