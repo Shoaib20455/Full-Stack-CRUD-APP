@@ -1,51 +1,77 @@
-18:21:08.270 Running build in Washington, D.C., USA (East) – iad1
-18:21:08.277 Build machine configuration: 2 cores, 8 GB
-18:21:08.495 Cloning github.com/Shoaib20455/Full-Stack-CRUD-APP (Branch: main, Commit: 4a28912)
-18:21:08.497 Previous build caches not available.
-18:21:09.027 Cloning completed: 532.000ms
-18:21:09.953 Running "vercel build"
-18:21:09.977 Vercel CLI 54.14.0
-18:21:10.703 Warning: Detected "engines": { "node": ">=20.0.0" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: https://vercel.link/node-version
-18:21:10.746 Installing dependencies...
-18:21:24.426 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
-18:21:24.476 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
-18:21:25.365 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
-18:21:59.554 
-18:21:59.556 added 1073 packages in 49s
-18:21:59.557 
-18:21:59.557 330 packages are looking for funding
-18:21:59.558   run `npm fund` for details
-18:21:59.794 Detected Next.js version: 16.2.6
-18:21:59.814 Running "npm run build"
-18:21:59.970 
-18:21:59.971 > my-app@0.1.0 build
-18:21:59.971 > next build
-18:21:59.971 
-18:22:03.641   Applying modifyConfig from Vercel
-18:22:03.641 Attention: Next.js now collects completely anonymous telemetry regarding usage.
-18:22:03.641 This information is used to shape Next.js' roadmap and prioritize features.
-18:22:03.642 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-18:22:03.642 https://nextjs.org/telemetry
-18:22:03.642 
-18:22:03.692 ▲ Next.js 16.2.6 (Turbopack)
-18:22:03.694 - Cache Components enabled
-18:22:03.694 - Experiments (use with caution):
-18:22:03.695   ⨯ turbopackServerFastRefresh
-18:22:03.696 
-18:22:03.747   Creating an optimized production build ...
-18:22:54.367 ✓ Compiled successfully in 50s
-18:22:54.391   Running TypeScript ...
-18:23:03.119 Failed to type check.
-18:23:03.120 
-18:23:03.120 ./src/lib/data/todos.ts:4:10
-18:23:03.120 Type error: Module '"@prisma/client"' has no exported member 'Prisma'.
-18:23:03.121 
-18:23:03.121   2 |
-18:23:03.121   3 | import { db } from '@/lib/db';
-18:23:03.122 > 4 | import { Prisma } from '@prisma/client';
-18:23:03.122     |          ^
-18:23:03.122   5 | import { cacheTag } from 'next/cache';
-18:23:03.123   6 |
-18:23:03.123   7 | interface GetTodosArgs {
-18:23:03.209 Next.js build worker exited with code: 1 and signal: null
-18:23:03.363 Error: Command "npm run build" exited with 1
+18:31:04.090 Running build in Washington, D.C., USA (East) – iad1
+18:31:04.091 Build machine configuration: 2 cores, 8 GB
+18:31:04.234 Cloning github.com/Shoaib20455/Full-Stack-CRUD-APP (Branch: main, Commit: e572215)
+18:31:04.236 Previous build caches not available.
+18:31:04.512 Cloning completed: 277.000ms
+18:31:04.977 Running "vercel build"
+18:31:05.002 Vercel CLI 54.14.0
+18:31:07.089 Warning: Detected "engines": { "node": ">=20.0.0" } in your `package.json` that will automatically upgrade when a new major Node.js Version is released. Learn More: https://vercel.link/node-version
+18:31:07.119 Installing dependencies...
+18:31:21.252 npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+18:31:21.373 npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+18:31:22.154 npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+18:31:56.716 
+18:31:56.716 > my-app@0.1.0 postinstall
+18:31:56.717 > prisma generate
+18:31:56.717 
+18:31:58.063 Loaded Prisma config from prisma.config.ts.
+18:31:58.063 
+18:31:58.393 Prisma schema loaded from prisma/schema.prisma.
+18:31:59.013 
+18:31:59.015 ✔ Generated Prisma Client (v7.8.0) to ./node_modules/@prisma/client in 407ms
+18:31:59.015 
+18:31:59.015 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+18:31:59.016 
+18:31:59.016 
+18:31:59.085 
+18:31:59.085 added 1073 packages in 52s
+18:31:59.086 
+18:31:59.086 330 packages are looking for funding
+18:31:59.086   run `npm fund` for details
+18:31:59.189 Detected Next.js version: 16.2.6
+18:31:59.214 Running "npm run build"
+18:31:59.718 
+18:31:59.719 > my-app@0.1.0 build
+18:31:59.719 > prisma generate && next build
+18:31:59.720 
+18:32:00.834 Loaded Prisma config from prisma.config.ts.
+18:32:00.835 
+18:32:01.154 Prisma schema loaded from prisma/schema.prisma.
+18:32:01.521 
+18:32:01.521 ✔ Generated Prisma Client (v7.8.0) to ./node_modules/@prisma/client in 213ms
+18:32:01.522 
+18:32:01.522 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+18:32:01.522 
+18:32:01.522 
+18:32:02.302   Applying modifyConfig from Vercel
+18:32:02.309 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+18:32:02.310 This information is used to shape Next.js' roadmap and prioritize features.
+18:32:02.311 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+18:32:02.311 https://nextjs.org/telemetry
+18:32:02.311 
+18:32:02.334 ▲ Next.js 16.2.6 (Turbopack)
+18:32:02.336 - Cache Components enabled
+18:32:02.337 - Experiments (use with caution):
+18:32:02.338   ⨯ turbopackServerFastRefresh
+18:32:02.338 
+18:32:02.385   Creating an optimized production build ...
+18:32:53.145 ✓ Compiled successfully in 50s
+18:32:53.171   Running TypeScript ...
+18:33:03.180 Failed to type check.
+18:33:03.181 
+18:33:03.182 ./src/components/TodoListInner.tsx:35:9
+18:33:03.182 Type error: Type '({ category: { name: string; slug: string; } | null; } & { title: string; createdAt: Date; updatedAt: Date; userId: string; completed: boolean | null; id: number; categoryId: number | null; })[]' is not assignable to type 'TodoItem[]'.
+18:33:03.182   Type '{ category: { name: string; slug: string; } | null; } & { title: string; createdAt: Date; updatedAt: Date; userId: string; completed: boolean | null; id: number; categoryId: number | null; }' is not assignable to type 'TodoItem'.
+18:33:03.183     Types of property 'completed' are incompatible.
+18:33:03.183       Type 'boolean | null' is not assignable to type 'boolean'.
+18:33:03.184         Type 'null' is not assignable to type 'boolean'.
+18:33:03.184 
+18:33:03.185   33 |   // 🎯 Extracted userId explicitly sent inside arguments wrapper
+18:33:03.185   34 |   type TodoItem = { id: number; title: string; completed: boolean; category: { name: strin...
+18:33:03.185 > 35 |   const todos: TodoItem[] = await getFilteredTodos({ userId, search, categorySlug, page, l...
+18:33:03.186      |         ^
+18:33:03.186   36 |
+18:33:03.186   37 |   return (
+18:33:03.187   38 |     <div className="space-y-3">
+18:33:03.279 Next.js build worker exited with code: 1 and signal: null
+18:33:03.427 Error: Command "npm run build" exited with 1
