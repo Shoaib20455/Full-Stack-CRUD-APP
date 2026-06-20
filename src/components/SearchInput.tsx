@@ -2,7 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function SearchInput() {
+interface Category {
+  slug: string;
+  name: string;
+}
+
+export default function SearchInput({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -18,15 +23,20 @@ export default function SearchInput() {
     
     // 🚨 RESET RULE: Agar user search ya category badle, to page hamesha 1 par reset ho jaye
     if (key !== "page") {
-      params.set("page", "1"); 
+      params.delete("page");
     }
 
     if (value) {
-      params.set(key, value);
+      if (key === "page" && value === "1") {
+        params.delete("page");
+      } else {
+        params.set(key, value);
+      }
     } else {
       params.delete(key);
     }
-    router.push(`?${params.toString()}`);
+    const queryString = params.toString();
+    router.push(queryString ? `?${queryString}` : "/");
   };
 
   return (
@@ -44,18 +54,30 @@ export default function SearchInput() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         {/* Left Side: Category Buttons */}
         <div className="flex gap-1.5 flex-wrap">
-          {["all", "common", "urgent", "critical"].map((cat) => (
+          <button
+            key="all"
+            type="button"
+            onClick={() => updateURL("category", null)}
+            className={`px-3 py-1 rounded-md text-xs font-mono font-medium uppercase transition-colors ${
+              currentCategory === "all"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            all
+          </button>
+          {categories.map((cat) => (
             <button
-              key={cat}
+              key={cat.slug}
               type="button"
-              onClick={() => updateURL("category", cat === "all" ? null : cat)}
+              onClick={() => updateURL("category", cat.slug)}
               className={`px-3 py-1 rounded-md text-xs font-mono font-medium uppercase transition-colors ${
-                currentCategory === cat
+                currentCategory === cat.slug
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
-              {cat}
+              {cat.name}
             </button>
           ))}
         </div>

@@ -35,7 +35,7 @@ const Hero = async ({ searchParams }: HeroProps) => {
       
       {/* 🚀 FIX: Wrap SearchInput inside Suspense because it reads dynamic URL Search Params */}
       <Suspense fallback={<SearchInputSkeleton />}>
-        <SearchInput />
+        <SearchInput categories={categories} />
       </Suspense>
 
       {/* CREATE Form */}

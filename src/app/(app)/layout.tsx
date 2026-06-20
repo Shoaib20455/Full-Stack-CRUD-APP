@@ -17,9 +17,50 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "My CRUD App",
-  description: "Learning CRUD operations with PostgreSQL",
+  metadataBase: new URL(siteUrl),
+  title: "Task Manager CRUD App | PostgreSQL Dashboard",
+  description:
+    "Manage tasks with a full-stack CRUD dashboard built with Next.js, PostgreSQL, Neon, Payload CMS, and secure server actions.",
+  keywords: [
+    "CRUD app",
+    "task manager",
+    "Next.js dashboard",
+    "PostgreSQL",
+    "Neon database",
+    "Payload CMS",
+    "server actions",
+  ],
+  applicationName: "Task Manager CRUD App",
+  authors: [{ name: "Task Manager CRUD App" }],
+  creator: "Task Manager CRUD App",
+  publisher: "Task Manager CRUD App",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    title: "Task Manager CRUD App | PostgreSQL Dashboard",
+    description:
+      "Manage tasks with a full-stack CRUD dashboard built with Next.js, PostgreSQL, Neon, Payload CMS, and secure server actions.",
+    url: "/",
+    siteName: "Task Manager CRUD App",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

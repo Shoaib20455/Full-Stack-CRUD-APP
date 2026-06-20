@@ -115,7 +115,8 @@ PAYLOAD_PUBLIC_SERVER_URL=http://localhost:3000
 ### 3. Database & Types
 
 ```bash
-npx payload generate:types
+npx payload generate:types 
+~If this gives error, set type to module in package.json
 npx prisma db push
 npx prisma generate
 ```

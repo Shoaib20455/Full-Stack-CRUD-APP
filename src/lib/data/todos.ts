@@ -14,6 +14,7 @@ interface GetTodosArgs {
 
 export async function getCategories() {
   "use cache"
+  cacheTag('categories')
   return await db.category.findMany({
     orderBy: { name: "asc" }
   });
